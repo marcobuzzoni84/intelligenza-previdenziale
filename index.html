@@ -1,0 +1,889 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quanto prenderò di pensione? Calcolo gratuito in 2 minuti | Intelligenza Previdenziale</title>
+<meta name="description" content="Scopri subito quanto riceverai di pensione pubblica e come integrare con un fondo pensione aperto. Simulazione gratuita e personalizzata in 2 minuti.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy: #0d1b2a;
+    --navy2: #112236;
+    --gold: #c9a84c;
+    --gold2: #e8c97a;
+    --cream: #f5f0e8;
+    --text: #1a1a2e;
+    --muted: #6b7280;
+    --white: #ffffff;
+    --danger: #e05c5c;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--navy);
+    color: var(--white);
+    overflow-x: hidden;
+  }
+
+  /* ───── HERO ───── */
+  .hero {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    padding: 80px 24px 60px;
+    background:
+      radial-gradient(ellipse 900px 600px at 60% 30%, rgba(201,168,76,0.08) 0%, transparent 70%),
+      radial-gradient(ellipse 600px 800px at 10% 80%, rgba(13,27,42,0.5) 0%, transparent 70%),
+      var(--navy);
+    overflow: hidden;
+  }
+
+  .hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23c9a84c' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    opacity: 0.5;
+    pointer-events: none;
+  }
+
+  .hero-inner {
+    max-width: 760px;
+    text-align: center;
+    position: relative;
+    z-index: 1;
+    animation: fadeUp 0.9s ease both;
+  }
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(201,168,76,0.12);
+    border: 1px solid rgba(201,168,76,0.3);
+    border-radius: 999px;
+    padding: 6px 18px;
+    font-size: 13px;
+    color: var(--gold2);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    margin-bottom: 32px;
+    animation: fadeUp 0.9s 0.1s ease both;
+  }
+
+  .badge::before { content: '◆'; font-size: 9px; }
+
+  h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2.4rem, 6vw, 4rem);
+    font-weight: 900;
+    line-height: 1.1;
+    color: var(--white);
+    margin-bottom: 24px;
+    animation: fadeUp 0.9s 0.2s ease both;
+  }
+
+  h1 em {
+    font-style: normal;
+    color: var(--gold);
+    position: relative;
+  }
+
+  h1 em::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: var(--gold);
+    opacity: 0.4;
+  }
+
+  .subtitle {
+    font-size: clamp(1rem, 2.5vw, 1.25rem);
+    color: rgba(255,255,255,0.65);
+    line-height: 1.7;
+    max-width: 580px;
+    margin: 0 auto 40px;
+    font-weight: 300;
+    animation: fadeUp 0.9s 0.3s ease both;
+  }
+
+  .cta-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    justify-content: center;
+    animation: fadeUp 0.9s 0.4s ease both;
+  }
+
+  .btn-primary {
+    background: linear-gradient(135deg, var(--gold) 0%, var(--gold2) 100%);
+    color: var(--navy);
+    border: none;
+    padding: 18px 40px;
+    border-radius: 8px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    box-shadow: 0 8px 32px rgba(201,168,76,0.3);
+    letter-spacing: 0.02em;
+    text-decoration: none;
+    display: inline-block;
+  }
+
+  .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 40px rgba(201,168,76,0.45);
+  }
+
+  .btn-ghost {
+    background: transparent;
+    color: rgba(255,255,255,0.7);
+    border: 1px solid rgba(255,255,255,0.2);
+    padding: 18px 32px;
+    border-radius: 8px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-decoration: none;
+    display: inline-block;
+  }
+
+  .btn-ghost:hover {
+    border-color: rgba(255,255,255,0.5);
+    color: var(--white);
+  }
+
+  .trust-bar {
+    margin-top: 60px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 40px;
+    opacity: 0.55;
+    animation: fadeUp 0.9s 0.6s ease both;
+  }
+
+  .trust-item {
+    font-size: 13px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .trust-item::before { content: '✓'; color: var(--gold); }
+
+  /* ───── SECTION BASE ───── */
+  section { padding: 100px 24px; }
+
+  .section-inner { max-width: 900px; margin: 0 auto; }
+
+  .section-label {
+    font-size: 12px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 16px;
+    display: block;
+  }
+
+  .section-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(1.8rem, 4vw, 2.8rem);
+    font-weight: 700;
+    line-height: 1.2;
+    margin-bottom: 20px;
+  }
+
+  /* ───── PROBLEMA ───── */
+  .problema { background: var(--navy2); }
+
+  .problema-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 24px;
+    margin-top: 60px;
+  }
+
+  .card {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 16px;
+    padding: 32px 28px;
+    transition: border-color 0.3s, transform 0.3s;
+  }
+
+  .card:hover {
+    border-color: rgba(201,168,76,0.35);
+    transform: translateY(-4px);
+  }
+
+  .card-icon {
+    font-size: 2.2rem;
+    margin-bottom: 16px;
+    display: block;
+  }
+
+  .card h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.15rem;
+    margin-bottom: 10px;
+    color: var(--gold2);
+  }
+
+  .card p { font-size: 0.9rem; color: rgba(255,255,255,0.6); line-height: 1.7; }
+
+  .stat-highlight {
+    display: inline-block;
+    font-family: 'Playfair Display', serif;
+    font-size: 3.5rem;
+    font-weight: 900;
+    color: var(--danger);
+    line-height: 1;
+    margin-bottom: 8px;
+  }
+
+  /* ───── SIMULATORE ───── */
+  .simulatore { background: var(--navy); }
+
+  .sim-box {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(201,168,76,0.25);
+    border-radius: 24px;
+    padding: 56px 48px;
+    margin-top: 48px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .sim-box::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--gold), var(--gold2), transparent);
+  }
+
+  .sim-step { display: none; }
+  .sim-step.active { display: block; animation: fadeUp 0.4s ease both; }
+
+  .sim-question {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(1.3rem, 3vw, 1.8rem);
+    margin-bottom: 36px;
+    line-height: 1.3;
+  }
+
+  .sim-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 14px;
+    margin-bottom: 24px;
+  }
+
+  .sim-option {
+    background: rgba(255,255,255,0.05);
+    border: 1.5px solid rgba(255,255,255,0.12);
+    border-radius: 12px;
+    padding: 18px 16px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 0.95rem;
+    color: rgba(255,255,255,0.8);
+    text-align: center;
+  }
+
+  .sim-option:hover, .sim-option.selected {
+    border-color: var(--gold);
+    background: rgba(201,168,76,0.12);
+    color: var(--white);
+  }
+
+  .sim-input {
+    width: 100%;
+    background: rgba(255,255,255,0.06);
+    border: 1.5px solid rgba(255,255,255,0.15);
+    border-radius: 10px;
+    padding: 16px 20px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 1rem;
+    color: var(--white);
+    outline: none;
+    transition: border-color 0.2s;
+    margin-bottom: 20px;
+  }
+
+  .sim-input:focus { border-color: var(--gold); }
+
+  .sim-input::placeholder { color: rgba(255,255,255,0.3); }
+
+  .sim-progress {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 40px;
+  }
+
+  .sim-dot {
+    height: 4px;
+    flex: 1;
+    border-radius: 2px;
+    background: rgba(255,255,255,0.1);
+    transition: background 0.3s;
+  }
+
+  .sim-dot.done { background: var(--gold); }
+
+  .result-box {
+    display: none;
+    text-align: center;
+    padding: 20px 0;
+    animation: fadeUp 0.5s ease both;
+  }
+
+  .result-box.show { display: block; }
+
+  .result-amount {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(3rem, 8vw, 5rem);
+    font-weight: 900;
+    color: var(--gold);
+    display: block;
+    line-height: 1;
+    margin: 20px 0 10px;
+  }
+
+  .result-sub {
+    font-size: 1.1rem;
+    color: rgba(255,255,255,0.6);
+    margin-bottom: 32px;
+  }
+
+  .result-cta {
+    background: linear-gradient(135deg, var(--navy2), #1a3a5c);
+    border: 1px solid rgba(201,168,76,0.3);
+    border-radius: 16px;
+    padding: 28px 32px;
+    margin-bottom: 28px;
+    text-align: left;
+  }
+
+  .result-cta h4 {
+    font-family: 'Playfair Display', serif;
+    color: var(--gold2);
+    margin-bottom: 10px;
+    font-size: 1.1rem;
+  }
+
+  .result-cta p { font-size: 0.9rem; color: rgba(255,255,255,0.65); line-height: 1.7; }
+
+  /* ───── COME FUNZIONA ───── */
+  .funziona { background: var(--navy2); }
+
+  .steps {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 0;
+    margin-top: 60px;
+    position: relative;
+  }
+
+  .step {
+    padding: 32px 28px;
+    position: relative;
+  }
+
+  .step-number {
+    font-family: 'Playfair Display', serif;
+    font-size: 4rem;
+    font-weight: 900;
+    color: rgba(201,168,76,0.12);
+    line-height: 1;
+    margin-bottom: 16px;
+  }
+
+  .step h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.15rem;
+    color: var(--gold2);
+    margin-bottom: 10px;
+  }
+
+  .step p { font-size: 0.9rem; color: rgba(255,255,255,0.6); line-height: 1.7; }
+
+  /* ───── AUTORITA ───── */
+  .autorita { background: var(--navy); }
+
+  .autorita-inner {
+    max-width: 760px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 48px;
+    align-items: start;
+    margin-top: 60px;
+  }
+
+  .avatar {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, rgba(201,168,76,0.3), rgba(201,168,76,0.1));
+    border: 2px solid rgba(201,168,76,0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 3rem;
+    flex-shrink: 0;
+  }
+
+  .bio h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.5rem;
+    margin-bottom: 6px;
+  }
+
+  .bio .role {
+    color: var(--gold);
+    font-size: 0.9rem;
+    margin-bottom: 20px;
+    display: block;
+  }
+
+  .bio p { color: rgba(255,255,255,0.65); line-height: 1.8; font-size: 0.95rem; }
+
+  .certifications {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 24px;
+  }
+
+  .cert {
+    background: rgba(201,168,76,0.1);
+    border: 1px solid rgba(201,168,76,0.25);
+    border-radius: 6px;
+    padding: 6px 14px;
+    font-size: 12px;
+    color: var(--gold2);
+    letter-spacing: 0.03em;
+  }
+
+  /* ───── CTA FINALE ───── */
+  .cta-finale {
+    background: linear-gradient(135deg, #0d1b2a 0%, #112236 50%, #0a1520 100%);
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .cta-finale::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse 800px 400px at 50% 50%, rgba(201,168,76,0.07) 0%, transparent 70%);
+  }
+
+  .cta-finale .section-inner { position: relative; z-index: 1; }
+
+  .cta-finale h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2rem, 5vw, 3.2rem);
+    font-weight: 900;
+    margin-bottom: 20px;
+    line-height: 1.15;
+  }
+
+  .cta-finale p {
+    color: rgba(255,255,255,0.6);
+    font-size: 1.1rem;
+    max-width: 520px;
+    margin: 0 auto 40px;
+    line-height: 1.7;
+  }
+
+  /* ───── FOOTER ───── */
+  footer {
+    background: rgba(0,0,0,0.4);
+    padding: 32px 24px;
+    text-align: center;
+    border-top: 1px solid rgba(255,255,255,0.06);
+  }
+
+  footer p { font-size: 13px; color: rgba(255,255,255,0.3); line-height: 1.8; }
+
+  footer a { color: rgba(255,255,255,0.5); text-decoration: none; }
+
+  /* ───── FORM FINALE ───── */
+  .contact-form {
+    max-width: 480px;
+    margin: 0 auto;
+  }
+
+  .form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin-bottom: 14px;
+  }
+
+  .form-input {
+    width: 100%;
+    background: rgba(255,255,255,0.07);
+    border: 1.5px solid rgba(255,255,255,0.12);
+    border-radius: 10px;
+    padding: 16px 18px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.95rem;
+    color: var(--white);
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .form-input:focus { border-color: var(--gold); }
+  .form-input::placeholder { color: rgba(255,255,255,0.3); }
+
+  .form-input.full { margin-bottom: 14px; }
+
+  .disclaimer {
+    font-size: 12px;
+    color: rgba(255,255,255,0.3);
+    margin-top: 16px;
+    line-height: 1.7;
+  }
+
+  /* ───── ANIMATIONS ───── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ───── RESPONSIVE ───── */
+  @media (max-width: 600px) {
+    .sim-box { padding: 32px 24px; }
+    .autorita-inner { grid-template-columns: 1fr; text-align: center; }
+    .avatar { margin: 0 auto; }
+    .form-row { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ════════════════════════════════
+     HERO
+════════════════════════════════ -->
+<section class="hero">
+  <div class="hero-inner">
+    <div class="badge">Consulenza Previdenziale Indipendente</div>
+    <h1>Quanto prenderai<br>di <em>pensione</em>?</h1>
+    <p class="subtitle">
+      Il sistema pubblico garantisce sempre meno. Scopri in 2 minuti qual è il tuo gap previdenziale reale — e come colmarlo con un fondo pensione aperto.
+    </p>
+    <div class="cta-group">
+      <a href="#simulatore" class="btn-primary">→ Calcola gratis in 2 minuti</a>
+      <a href="#problema" class="btn-ghost">Come funziona</a>
+    </div>
+    <div class="trust-bar">
+      <span class="trust-item">Nessuna vendita immediata</span>
+      <span class="trust-item">100% gratuito</span>
+      <span class="trust-item">Risultato immediato</span>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════
+     PROBLEMA
+════════════════════════════════ -->
+<section class="problema" id="problema">
+  <div class="section-inner">
+    <span class="section-label">La realtà che nessuno ti dice</span>
+    <h2 class="section-title">Il sistema pensionistico ti garantirà <em style="color:var(--danger)">molto meno</em> di quello che ti aspetti</h2>
+    <p style="color:rgba(255,255,255,0.6); font-size:1.05rem; line-height:1.8; max-width:680px;">
+      Dal 2011, l'Italia è passata al sistema contributivo puro. Il risultato? Per molti lavoratori la pensione pubblica coprirà solo il 50–60% dell'ultimo stipendio — e se hai iniziato a lavorare dopo il 1996, anche meno.
+    </p>
+
+    <div class="problema-grid">
+      <div class="card">
+        <span class="stat-highlight">-40%</span>
+        <h3>Gap previdenziale medio</h3>
+        <p>Un lavoratore dipendente oggi in attività rischia di ricevere il 40% in meno rispetto all'ultimo stipendio una volta in pensione.</p>
+      </div>
+      <div class="card">
+        <span class="card-icon">⏳</span>
+        <h3>Ogni anno conta doppio</h3>
+        <p>Iniziare un fondo pensione a 30 anni anziché a 40 può fare la differenza di decine di migliaia di euro grazie alla capitalizzazione composta.</p>
+      </div>
+      <div class="card">
+        <span class="card-icon">🏦</span>
+        <h3>Il TFR in azienda è silenzioso</h3>
+        <p>Lasciare il TFR in azienda significa perdersi la rivalutazione fiscalmente agevolata del fondo pensione. Un regalo che stai rifiutando ogni mese.</p>
+      </div>
+      <div class="card">
+        <span class="card-icon">📉</span>
+        <h3>La pensione pubblica scende</h3>
+        <p>Le proiezioni INPS aggiornate mostrano un trend chiaro: le pensioni future saranno strutturalmente inferiori a quelle dei nostri genitori.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════
+     SIMULATORE
+════════════════════════════════ -->
+<section class="simulatore" id="simulatore">
+  <div class="section-inner">
+    <span class="section-label">Strumento gratuito</span>
+    <h2 class="section-title">Simula la tua pensione<br>in 3 domande</h2>
+
+    <div class="sim-box">
+      <!-- Progress -->
+      <div class="sim-progress" id="simProgress">
+        <div class="sim-dot done" id="dot1"></div>
+        <div class="sim-dot" id="dot2"></div>
+        <div class="sim-dot" id="dot3"></div>
+      </div>
+
+      <!-- Step 1 -->
+      <div class="sim-step active" id="step1">
+        <p class="sim-question">Quanti anni hai?</p>
+        <div class="sim-grid">
+          <div class="sim-option" onclick="selectOption(this, 1)">25–34 anni</div>
+          <div class="sim-option" onclick="selectOption(this, 1)">35–44 anni</div>
+          <div class="sim-option" onclick="selectOption(this, 1)">45–54 anni</div>
+          <div class="sim-option" onclick="selectOption(this, 1)">55+ anni</div>
+        </div>
+        <button class="btn-primary" onclick="nextStep(2)" style="opacity:0.4; cursor:not-allowed;" id="next1">Continua →</button>
+      </div>
+
+      <!-- Step 2 -->
+      <div class="sim-step" id="step2">
+        <p class="sim-question">Qual è il tuo reddito annuo lordo?</p>
+        <div class="sim-grid">
+          <div class="sim-option" onclick="selectOption(this, 2)">< 25.000 €</div>
+          <div class="sim-option" onclick="selectOption(this, 2)">25.000–40.000 €</div>
+          <div class="sim-option" onclick="selectOption(this, 2)">40.000–60.000 €</div>
+          <div class="sim-option" onclick="selectOption(this, 2)">> 60.000 €</div>
+        </div>
+        <button class="btn-primary" onclick="nextStep(3)" style="opacity:0.4; cursor:not-allowed;" id="next2">Continua →</button>
+      </div>
+
+      <!-- Step 3 -->
+      <div class="sim-step" id="step3">
+        <p class="sim-question">Hai già un fondo pensione attivo?</p>
+        <div class="sim-grid">
+          <div class="sim-option" onclick="selectOption(this, 3)">Sì, già attivo</div>
+          <div class="sim-option" onclick="selectOption(this, 3)">No, mai aperto</div>
+          <div class="sim-option" onclick="selectOption(this, 3)">Sì, ma fermo</div>
+          <div class="sim-option" onclick="selectOption(this, 3)">Non lo so</div>
+        </div>
+        <button class="btn-primary" onclick="showResult()" style="opacity:0.4; cursor:not-allowed;" id="next3">Calcola risultato →</button>
+      </div>
+
+      <!-- RESULT -->
+      <div class="result-box" id="result">
+        <p style="color:rgba(255,255,255,0.5); font-size:0.9rem; text-transform:uppercase; letter-spacing:0.1em;">Stima del tuo gap previdenziale mensile</p>
+        <span class="result-amount" id="resultAmount">–€ 890</span>
+        <p class="result-sub">al mese che potresti perdere rispetto al tuo stile di vita attuale</p>
+
+        <div class="result-cta">
+          <h4>💡 Cosa fare adesso</h4>
+          <p>Un fondo pensione aperto con contribuzione mensile calibrata sul tuo profilo può coprire fino all'80% di questo gap — con vantaggi fiscali immediati che riducono le tasse già quest'anno.</p>
+        </div>
+
+        <a href="#contatto" class="btn-primary" style="font-size:1rem; padding:18px 36px;">
+          Ricevi l'analisi personalizzata gratuita →
+        </a>
+        <p style="font-size:13px; color:rgba(255,255,255,0.3); margin-top:16px;">Senza impegno. Senza spam. Una chiamata conoscitiva.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════
+     COME FUNZIONA
+════════════════════════════════ -->
+<section class="funziona" id="come-funziona">
+  <div class="section-inner">
+    <span class="section-label">Il processo</span>
+    <h2 class="section-title">Tre passi verso<br>una pensione integrata</h2>
+
+    <div class="steps">
+      <div class="step">
+        <div class="step-number">01</div>
+        <h3>Diagnosi gratuita</h3>
+        <p>Analizziamo insieme la tua posizione INPS, il TFR, e il gap previdenziale reale. Niente numeri generici: solo la tua situazione.</p>
+      </div>
+      <div class="step">
+        <div class="step-number">02</div>
+        <h3>Selezione del fondo</h3>
+        <p>Ti presento i fondi pensione aperti più adatti al tuo profilo: per costi, linee di investimento e orizzonte temporale. Confronto comparatore incluso.</p>
+      </div>
+      <div class="step">
+        <div class="step-number">03</div>
+        <h3>Attivazione e monitoraggio</h3>
+        <p>Attivi il fondo in pochi minuti. Ti affianco nel tempo con revisioni annuali e aggiornamenti se la tua vita cambia.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════
+     AUTORITÀ
+════════════════════════════════ -->
+<section class="autorita" id="chi-sono">
+  <div class="section-inner">
+    <span class="section-label">Chi sono</span>
+    <h2 class="section-title">Perché fidarsi</h2>
+
+    <div class="autorita-inner">
+      <div class="avatar">👤</div>
+      <div class="bio">
+        <h3>[Il tuo nome]</h3>
+        <span class="role">Consulente Previdenziale Indipendente · Iscritto OCF</span>
+        <p>
+          Da oltre [X] anni aiuto lavoratori dipendenti e autonomi a costruire una previdenza complementare solida e personalizzata. Non vendo prodotti: aiuto le persone a scegliere quelli giusti, con trasparenza sui costi e sugli obiettivi.
+        </p>
+        <p style="margin-top:16px;">
+          Ho seguito oltre [N] famiglie nell'attivazione di un fondo pensione aperto. Il 90% ha scoperto che poteva iniziare con meno di 100 €/mese ottenendo subito un vantaggio fiscale concreto.
+        </p>
+        <div class="certifications">
+          <span class="cert">OCF Reg.</span>
+          <span class="cert">EFPA Certified</span>
+          <span class="cert">Iscritto RUI</span>
+          <span class="cert">Indipendente</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════
+     CTA FINALE
+════════════════════════════════ -->
+<section class="cta-finale" id="contatto">
+  <div class="section-inner">
+    <span class="section-label">Primo passo</span>
+    <h2>Prenota la tua analisi<br>previdenziale gratuita</h2>
+    <p>Una chiamata di 30 minuti. Ti dico esattamente dove sei, dove potresti arrivare, e cosa conviene fare — senza impegno di sottoscrizione.</p>
+
+    <div class="contact-form">
+      <div class="form-row">
+        <input type="text" class="form-input" placeholder="Nome">
+        <input type="text" class="form-input" placeholder="Cognome">
+      </div>
+      <input type="email" class="form-input full" placeholder="Email" style="display:block; margin-bottom:14px;">
+      <input type="tel" class="form-input full" placeholder="Telefono" style="display:block; margin-bottom:14px;">
+      <select class="form-input full" style="display:block; margin-bottom:20px;">
+        <option value="" style="background:#0d1b2a">Quando preferisci essere contattato?</option>
+        <option style="background:#0d1b2a">Mattina (9:00–12:00)</option>
+        <option style="background:#0d1b2a">Pomeriggio (14:00–17:00)</option>
+        <option style="background:#0d1b2a">Sera (17:00–19:00)</option>
+      </select>
+      <button class="btn-primary" style="width:100%; font-size:1.05rem; padding:20px;">
+        Prenota analisi gratuita →
+      </button>
+      <p class="disclaimer">
+        Inviando il modulo accetti la nostra <a href="#" style="color:rgba(255,255,255,0.45); text-decoration:underline;">Privacy Policy</a>. I tuoi dati non saranno condivisi con terze parti. Potrai disiscriverti in qualsiasi momento.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════
+     FOOTER
+════════════════════════════════ -->
+<footer>
+  <p>
+    © 2025 [Nome Consulente] · P.IVA XXXXXXXXXX · Iscritto OCF n. XXXXX<br>
+    <a href="#">Privacy Policy</a> · <a href="#">Cookie Policy</a> · <a href="#">Note Legali</a>
+  </p>
+  <p style="margin-top:12px;">
+    La presente pagina ha scopo informativo e non costituisce offerta di prodotti finanziari.<br>
+    Ogni raccomandazione è subordinata ad analisi individuale del profilo dell'investitore.
+  </p>
+</footer>
+
+<script>
+  // ── Simulator logic ──────────────────
+  const answers = {};
+
+  function selectOption(el, step) {
+    const parent = el.parentElement;
+    parent.querySelectorAll('.sim-option').forEach(o => o.classList.remove('selected'));
+    el.classList.add('selected');
+    answers[step] = el.textContent;
+
+    const btn = document.getElementById('next' + step);
+    btn.style.opacity = '1';
+    btn.style.cursor = 'pointer';
+  }
+
+  function nextStep(stepNum) {
+    const prevStep = stepNum - 1;
+    if (!answers[prevStep]) return;
+
+    document.getElementById('step' + prevStep).classList.remove('active');
+    document.getElementById('step' + stepNum).classList.add('active');
+
+    // Update progress
+    for (let i = 1; i <= 3; i++) {
+      document.getElementById('dot' + i).classList.toggle('done', i <= stepNum);
+    }
+  }
+
+  function showResult() {
+    if (!answers[3]) return;
+
+    // Calculate rough gap based on income
+    const incomeMap = {
+      '< 25.000 €':     '–€ 520',
+      '25.000–40.000 €':'–€ 890',
+      '40.000–60.000 €':'–€ 1.340',
+      '> 60.000 €':     '–€ 2.100'
+    };
+
+    const amount = incomeMap[answers[2]] || '–€ 890';
+    document.getElementById('resultAmount').textContent = amount;
+
+    document.getElementById('step3').classList.remove('active');
+    document.getElementById('result').classList.add('show');
+
+    // All dots done
+    for (let i = 1; i <= 3; i++) {
+      document.getElementById('dot' + i).classList.add('done');
+    }
+  }
+
+  // ── Scroll reveal ──────────────────
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.style.opacity = '1';
+        e.target.style.transform = 'translateY(0)';
+      }
+    });
+  }, { threshold: 0.1 });
+
+  document.querySelectorAll('.card, .step, .autorita-inner').forEach(el => {
+    el.style.opacity = '0';
+    el.style.transform = 'translateY(30px)';
+    el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+    observer.observe(el);
+  });
+</script>
+</body>
+</html>
