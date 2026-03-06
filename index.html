@@ -745,7 +745,7 @@ function navDot(n){
 async function parsePrompt(){
   const banner=document.getElementById('parsingBanner');banner.classList.add('show');
   try{
-    const r=await fetch('https://api.anthropic.com/v1/messages',{
+    const r=await fetch('/.netlify/functions/claude',{
       method:'POST',headers:{'Content-Type':'application/json'},
       body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:600,
         messages:[{role:'user',content:`Estrai dal testo i dati previdenziali. Restituisci SOLO JSON valido, nessun testo extra, nessun markdown.
@@ -1082,7 +1082,7 @@ function buildConclusionPrompt(c){
 }
 async function callAI(msg,hist=[]){
   const msgs=hist.length?[...hist,{role:'user',content:buildContent(msg)}]:[{role:'user',content:buildContent(msg)}];
-  const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},
+  const r=await fetch('/.netlify/functions/claude',{method:'POST',headers:{'Content-Type':'application/json'},
     body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1200,
       system:'Sei un assistente AI esperto di previdenza italiana. Italiano, professionale e diretto. NON menzionare mai R.I.T.A. NON usare mai "Caro/Gentile cliente". In chat rispondi in testo semplice, no HTML.\n\nREGOLA FONDAMENTALE: cita e basa le tue risposte ESCLUSIVAMENTE su fonti ufficiali italiane: COVIP (covip.it), Agenzia delle Entrate (agenziaentrate.gov.it), Ministero dell\'Economia e delle Finanze (mef.gov.it), INPS (inps.it), Banca d\'Italia (bancaditalia.it), CONSOB (consob.it), IVASS (ivass.it), normativa ufficiale (Decreto Legislativo 252/2005 sulla previdenza complementare, TUIR, ecc.). Se non sei certo che un\'informazione sia supportata da queste fonti, dillo esplicitamente. Non citare mai fonti non ufficiali, blog, forum o siti di comparazione.',
       messages:msgs})});
