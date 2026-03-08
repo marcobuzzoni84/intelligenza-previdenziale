@@ -518,8 +518,8 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.4) sepia(1) s
           <div class="gap-card-sub" id="gapObjSub">—</div>
         </div>
         <div class="gap-card secondary">
-          <div class="gap-card-badge sal">Vs. ultimo stipendio</div>
-          <div class="gap-card-label">Gap rispetto all'ultimo stipendio</div>
+          <div class="gap-card-badge sal">Vs. stipendio al pensionamento</div>
+          <div class="gap-card-label">Gap rispetto al tuo stipendio stimato al pensionamento</div>
           <div class="gap-card-amount neg" id="gapSal">—</div>
           <div class="gap-card-sub" id="gapSalSub">—</div>
         </div>
@@ -528,12 +528,10 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.4) sepia(1) s
       <div class="result-kpis fade-in">
         <div class="kpi-card"><div class="kpi-label">Pensione INPS stimata</div><div class="kpi-val" id="kpiInps">—</div><div class="kpi-sub">netto/mese</div></div>
         <div class="kpi-card"><div class="kpi-label">Anno pensionamento</div><div class="kpi-val" id="kpiAnno">—</div><div class="kpi-sub" id="kpiAnnoSub">—</div></div>
-        <div class="kpi-card"><div class="kpi-label">Tasso sostituzione</div><div class="kpi-val" id="kpiTasso">—</div><div class="kpi-sub">pensione / stipendio finale</div></div>
+        <div class="kpi-card"><div class="kpi-label">Tasso sostituzione</div><div class="kpi-val" id="kpiTasso">—</div><div class="kpi-sub">pensione / stipendio al pensionamento</div></div>
       </div>
-      <!-- NARRATIVE AI -->
-      <div class="narrative fade-in" id="narrativeBox"></div>
-      <!-- AVATAR CONCLUSIONE AI -->
-      <div style="margin:8px 0 6px;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.15em;color:var(--gold);text-transform:uppercase;display:none;" id="avConclusionLabel">💬 Le conclusioni di <span id="avConcNameLabel">Luca</span></div>
+      <!-- AVATAR CONCLUSIONE AI + NARRATIVE (sezione unificata) -->
+      <div style="margin:24px 0 6px;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.15em;color:var(--gold);text-transform:uppercase;display:none;" id="avConclusionLabel">💬 Analisi di <span id="avConcNameLabel">Luca</span></div>
       <div class="avatar-scene avatar-conclusion fade-in" id="avConclusion" style="display:none;">
         <div class="avatar-fig">
           <div class="avatar-circle"><span id="avEmoji4" style="font-size:30px;">👨‍💼</span></div>
@@ -541,6 +539,8 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.4) sepia(1) s
         </div>
         <div class="avatar-bubble" id="avBubble4" style="border:1px solid var(--gold);border-radius:4px 4px 4px 0;background:rgba(201,168,76,.05);">—</div>
       </div>
+      <!-- NARRATIVE AI (incluso nella sezione di Luca/Sofia) -->
+      <div class="narrative fade-in" id="narrativeBox" style="margin-top:0;border-top:1px solid rgba(201,168,76,.15);padding-top:20px;"></div>
       <!-- PDF su step 3 -->
       <div class="result-pdf-box fade-in" id="resultPdfBox">
         <div class="result-pdf-title">📄 Vuoi un'analisi ancora più precisa?</div>
@@ -1052,10 +1052,10 @@ function buildPrompt(c){
     +'DATI: età '+S.eta+'a | '+S.tipo+' | RAL €'+fmt(S.ral)+' | '+S.contributi+' anni contributi | Fondo: '+S.fondo+fondoNote+'\n'
     +'Obiettivo pensione: €'+fmt(S.obiettivo)+'/mese netti\n'
     +pdfNote+'\n\n'
-    +'CALCOLI: INPS netta €'+fmt(c.nettoInps)+'/mese | Stipendio netto stimato AL MOMENTO DELLA PENSIONE ('+c.annoPens+') €'+fmt(c.stipNetto)+'/mese | Gap vs obiettivo €'+fmt(c.gapObj)+'/mese | Gap vs stip. €'+fmt(c.gapSal)+'/mese | Tasso sost. '+c.tasso+'% | Pensione: '+c.annoPens+' | Gap annuo €'+fmt(c.gapSal*12)+' | Gap 20 anni €'+fmt(c.gapSal*12*20)+'\n\n'
+    +'CALCOLI: INPS netta €'+fmt(c.nettoInps)+'/mese | Stipendio netto stimato AL MOMENTO DEL PENSIONAMENTO ('+c.annoPens+') €'+fmt(c.stipNetto)+'/mese | Gap vs obiettivo €'+fmt(c.gapObj)+'/mese | Gap vs stip. €'+fmt(c.gapSal)+'/mese | Tasso sost. '+c.tasso+'% | Pensione: '+c.annoPens+' | Gap annuo €'+fmt(c.gapSal*12)+' | Gap 20 anni €'+fmt(c.gapSal*12*20)+'\n\n'
     +'Scrivi analisi in HTML (<strong>,<h3>,<ul>,<li>). Struttura:\n'
     +'1. '+apertura+' Inizia con i numeri, non con saluti.\n'
-    +'2. <h3>La tua posizione previdenziale</h3>\n'
+    +'2. <h3>La tua posizione previdenziale</h3> — REGOLA LINGUISTICA OBBLIGATORIA: ogni volta che scrivi la parola "stipendio" devi scrivere sempre e solo "stipendio stimato al momento del pensionamento ('+c.annoPens+')" — mai solo "stipendio", mai "stipendio attuale", mai "ultimo stipendio" da soli.\n'
     +'3. <h3>Il rischio concreto</h3> (€/anno e 20 anni)\n'
     +'4. <h3>Cosa puoi fare</h3> — solo fondo pensione + risparmio IRPEF stimato'+tfrSug+'. MAI R.I.T.A.\n'
     +'~350 parole. Solo HTML.';
@@ -1076,15 +1076,15 @@ function buildConclusionPrompt(c){
     +'1. Una frase di sintesi diretta sui numeri reali: tasso sostituzione '+c.tasso+'%, gap €'+fmt(c.gapObj)+'/mese\n'
     +'2. Il giudizio concreto: '+urgenza+'\n'
     +'3. Il passo consigliato: '+passo+'\n'
-    +'4. Introduzione a Marco Buzzoni: scrivi come se lo conoscessi bene e ti fidassi di lui. Il tono deve essere quello di chi dice "conosco la persona giusta per te". Specifica che si tratta di una chiamata operativa di circa 15 minuti — non una chiacchierata generica ma un primo passo concreto per chi è già motivato a costruire un piano. La consulenza è gratuita.\n\n'
+    +'4. Chiusura: porta l\'utente a interrogarsi se vuole passare da questa analisi a un piano previdenziale personalizzato. Non scegliere IL consulente — quello è già Marco Buzzoni, è implicito. La domanda è: vuoi trasformare questi numeri in un piano concreto? Specifica che una chiamata di ~15 minuti è disponibile gratuitamente per chi è motivato a farlo.\n\n'
     +'NON usare frasi come "puoi fargli tutte le domande che vuoi" o "senza impegno". Il senso implicito è: se sei motivato, questo è il momento giusto per passare all\'azione con qualcuno di competente.\n'
-    +'NON menzionare R.I.T.A. NON usare "Caro/Gentile cliente".';
+    +'REGOLA LINGUISTICA: ogni volta che scrivi la parola "stipendio" usa sempre la forma completa "stipendio stimato al momento del pensionamento" — mai solo "stipendio" o "ultimo stipendio" da soli.\nNON menzionare R.I.T.A. NON usare "Caro/Gentile cliente".';
 }
 async function callAI(msg,hist=[]){
   const msgs=hist.length?[...hist,{role:'user',content:buildContent(msg)}]:[{role:'user',content:buildContent(msg)}];
   const r=await fetch('/.netlify/functions/claude',{method:'POST',headers:{'Content-Type':'application/json'},
     body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1200,
-      system:'Sei un assistente AI esperto di previdenza italiana. Italiano, professionale e diretto. NON menzionare mai R.I.T.A. NON usare mai "Caro/Gentile cliente". In chat rispondi in testo semplice, no HTML.\n\nREGOLA FONDAMENTALE: cita e basa le tue risposte ESCLUSIVAMENTE su fonti ufficiali italiane: COVIP (covip.it), Agenzia delle Entrate (agenziaentrate.gov.it), Ministero dell\'Economia e delle Finanze (mef.gov.it), INPS (inps.it), Banca d\'Italia (bancaditalia.it), CONSOB (consob.it), IVASS (ivass.it), normativa ufficiale (Decreto Legislativo 252/2005 sulla previdenza complementare, TUIR, ecc.). Se non sei certo che un\'informazione sia supportata da queste fonti, dillo esplicitamente. Non citare mai fonti non ufficiali, blog, forum o siti di comparazione.',
+      system:'Sei un assistente AI esperto di previdenza italiana. Italiano, professionale e diretto. NON menzionare mai R.I.T.A. NON usare mai "Caro/Gentile cliente". In chat rispondi in testo semplice, no HTML.\n\nREGOLA FONDAMENTALE: cita e basa le tue risposte ESCLUSIVAMENTE su fonti ufficiali italiane: COVIP (covip.it), Agenzia delle Entrate (agenziaentrate.gov.it), Ministero dell\'Economia e delle Finanze (mef.gov.it), INPS (inps.it), Banca d\'Italia (bancaditalia.it), CONSOB (consob.it), IVASS (ivass.it), normativa ufficiale (Decreto Legislativo 252/2005 sulla previdenza complementare, TUIR, ecc.). Se non sei certo che un\'informazione sia supportata da queste fonti, dillo esplicitamente. Non citare mai fonti non ufficiali, blog, forum o siti di comparazione.\n\nSE l'utente fa domande molto specifiche sulla propria situazione (es. quale fondo scegliere, quanto versare, conviene il TFR al fondo, simulazioni personalizzate) che richiedono una valutazione individuale approfondita: rispondi brevemente con le informazioni generali di fonte ufficiale, poi suggerisci di prenotare la chiamata gratuita di ~15 minuti disponibile su questo sito per un piano personalizzato sui suoi numeri reali.',
       messages:msgs})});
   if(!r.ok)throw new Error(r.status);
   return(await r.json()).content[0].text;
