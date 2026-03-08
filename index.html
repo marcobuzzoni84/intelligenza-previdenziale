@@ -255,6 +255,19 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.4) sepia(1) s
 </style>
 </head>
 <body>
+<!-- Netlify Forms: form nascosto per cattura dati e notifica email -->
+<form name="consulenza-previdenziale" data-netlify="true" netlify-honeypot="bot-field" hidden>
+  <input type="hidden" name="form-name" value="consulenza-previdenziale">
+  <input type="text" name="bot-field">
+  <input type="text" name="nome_cognome">
+  <input type="email" name="email">
+  <input type="text" name="telefono">
+  <input type="text" name="codice_fiscale">
+  <input type="text" name="orari_preferiti">
+  <textarea name="note"></textarea>
+  <textarea name="dati_simulatore"></textarea>
+  <textarea name="profilo_inserito"></textarea>
+</form>
 <nav>
   <div class="nav-logo"><span>Intelligenza</span>Previdenziale</div>
   <button class="nav-cta" onclick="openContact()">Consulenza gratuita</button>
@@ -745,9 +758,11 @@ function navDot(n){
 async function parsePrompt(){
   const banner=document.getElementById('parsingBanner');banner.classList.add('show');
   try{
-    const r=await fetch('/.netlify/functions/claude',{
+    const isNetlifyP=window.location.hostname.includes('netlify.app')||window.location.hostname.includes('intelligenzaprevidenziale.com');
+    const parseUrl=isNetlifyP?'/.netlify/functions/claude':'https://api.anthropic.com/v1/messages';
+    const r=await fetch(parseUrl,{
       method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:600,
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:800,
         messages:[{role:'user',content:`Estrai dal testo i dati previdenziali. Restituisci SOLO JSON valido, nessun testo extra, nessun markdown.
 Struttura ESATTA (rispetta i tipi):
 {
@@ -784,8 +799,8 @@ function applyParsed(p){
   // Età → data di nascita
   if(p.eta&&p.eta>18&&p.eta<68){
     const y=new Date().getFullYear()-p.eta;
-    document.getElementById('dataNascita').value=`${y}-06-15`;
-    onDateChange();
+    // Data nascita NON auto-compilata: l'utente la inserisce manualmente
+    // document.getElementById('dataNascita').value = ...
   }
   // Tipo lavoro
   if(p.tipo){
@@ -837,7 +852,7 @@ function showLockedState(p){
     `${trovati}Ho compilato i campi automaticamente.<br>
     I <em>campi evidenziati in oro</em> sono bloccati — clicca 🔓 per modificarli: ti spiego da dove ho ricavato quel valore e se c'è una discrepanza.`;
   // Blocca campi
-  lockField('dataNascita',true);
+  // dataNascita NON viene bloccata: l'utente la inserisce liberamente
   if(document.getElementById('ralInput').style.display!=='none')lockField('ralInput',true);
   else lockSelect('ralSelect',true);
   lockRange('contributi',true);
@@ -849,7 +864,7 @@ function showLockedState(p){
     document.getElementById('unlockFondoRow').classList.add('show');
   }
   // Mostra unlock buttons
-  ['unlockData','unlockRal','unlockContr'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display='';});
+  ['unlockRal','unlockContr'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display='';});
   ['unlockTipoRow','unlockFondoRow'].forEach(id=>{const el=document.getElementById(id);if(el)el.classList.add('show');});
   S.fieldsLocked=true;
 }
@@ -1058,7 +1073,7 @@ function buildPrompt(c){
     +'2. <h3>La tua posizione previdenziale</h3> — REGOLA LINGUISTICA OBBLIGATORIA: ogni volta che scrivi la parola "stipendio" devi scrivere sempre e solo "stipendio stimato al momento del pensionamento ('+c.annoPens+')" — mai solo "stipendio", mai "stipendio attuale", mai "ultimo stipendio" da soli.\n'
     +'3. <h3>Il rischio concreto</h3> (€/anno e 20 anni)\n'
     +'4. <h3>Cosa puoi fare</h3> — solo fondo pensione + risparmio IRPEF stimato'+tfrSug+'. MAI R.I.T.A.\n'
-    +'~350 parole. Solo HTML.';
+    +'~500 parole. Analisi approfondita e personalizzata. Solo HTML.';
 }
 function buildConclusionPrompt(c){
   const nn=S.nome||(S.parsed&&S.parsed.nome?S.parsed.nome:null);
@@ -1082,10 +1097,13 @@ function buildConclusionPrompt(c){
 }
 async function callAI(msg,hist=[]){
   const msgs=hist.length?[...hist,{role:'user',content:buildContent(msg)}]:[{role:'user',content:buildContent(msg)}];
-  const r=await fetch('/.netlify/functions/claude',{method:'POST',headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1200,
-      system:'Sei un assistente AI esperto di previdenza italiana. Italiano, professionale e diretto. NON menzionare mai R.I.T.A. NON usare mai "Caro/Gentile cliente". In chat rispondi in testo semplice, no HTML.\n\nREGOLA FONDAMENTALE: cita e basa le tue risposte ESCLUSIVAMENTE su fonti ufficiali italiane: COVIP (covip.it), Agenzia delle Entrate (agenziaentrate.gov.it), Ministero dell\'Economia e delle Finanze (mef.gov.it), INPS (inps.it), Banca d\'Italia (bancaditalia.it), CONSOB (consob.it), IVASS (ivass.it), normativa ufficiale (Decreto Legislativo 252/2005 sulla previdenza complementare, TUIR, ecc.). Se non sei certo che un\'informazione sia supportata da queste fonti, dillo esplicitamente. Non citare mai fonti non ufficiali, blog, forum o siti di comparazione.\n\nSE l'utente fa domande molto specifiche sulla propria situazione (es. quale fondo scegliere, quanto versare, conviene il TFR al fondo, simulazioni personalizzate) che richiedono una valutazione individuale approfondita: rispondi brevemente con le informazioni generali di fonte ufficiale, poi suggerisci di prenotare la chiamata gratuita di ~15 minuti disponibile su questo sito per un piano personalizzato sui suoi numeri reali.',
-      messages:msgs})});
+  const systemPrompt='Sei un assistente AI esperto di previdenza italiana. Italiano, professionale e diretto. NON menzionare mai R.I.T.A. NON usare mai "Caro/Gentile cliente". In chat rispondi in testo semplice, no HTML.\n\nREGOLA FONDAMENTALE: cita e basa le tue risposte ESCLUSIVAMENTE su fonti ufficiali italiane: COVIP (covip.it), Agenzia delle Entrate (agenziaentrate.gov.it), Ministero dell\'Economia e delle Finanze (mef.gov.it), INPS (inps.it), Banca d\'Italia (bancaditalia.it), CONSOB (consob.it), IVASS (ivass.it), normativa ufficiale (Decreto Legislativo 252/2005 sulla previdenza complementare, TUIR, ecc.). Se non sei certo che un\'informazione sia supportata da queste fonti, dillo esplicitamente. Non citare mai fonti non ufficiali, blog, forum o siti di comparazione.\n\nSE l\'utente fa domande molto specifiche sulla propria situazione (es. quale fondo scegliere, quanto versare, conviene il TFR al fondo, simulazioni personalizzate) che richiedono una valutazione individuale approfondita: rispondi brevemente con le informazioni generali di fonte ufficiale, poi suggerisci di prenotare la chiamata gratuita di ~15 minuti disponibile su questo sito per un piano personalizzato sui suoi numeri reali.';
+  const payload={model:'claude-sonnet-4-20250514',max_tokens:3000,system:systemPrompt,messages:msgs};
+  // Auto-detect: se siamo su Netlify usa il proxy, altrimenti chiama direttamente
+  const isNetlify=window.location.hostname.includes('netlify.app')||window.location.hostname.includes('intelligenzaprevidenziale.com');
+  const apiUrl=isNetlify?'/.netlify/functions/claude':'https://api.anthropic.com/v1/messages';
+  const headers={'Content-Type':'application/json'};
+  const r=await fetch(apiUrl,{method:'POST',headers,body:JSON.stringify(payload)});
   if(!r.ok)throw new Error(r.status);
   return(await r.json()).content[0].text;
 }
@@ -1151,27 +1169,74 @@ async function submitContact(){
   const tel=document.getElementById('cTel').value.trim();
   const note=document.getElementById('cNote').value.trim();
   const orari=[...document.querySelectorAll('#orariGrid input:checked')].map(cb=>cb.value).join(', ')||'Non specificati';
-  // Costruisci corpo email
+
+  // Costruisci riepilogo completo simulatore
   const c=S.eta>0?calcBase():null;
-  const riepilogo=c?`\n\nDATI ANALISI:\nEtà: ${S.eta} anni | Tipo: ${S.tipo} | RAL: €${fmt(S.ral)}\nPensione INPS stimata: €${fmt(c.nettoInps)}/mese | Gap: €${fmt(c.gapObj)}/mese\nAnno pensionamento: ${c.annoPens}`:'\n\nNessuna analisi completata prima della richiesta.';
-  const body=`Nuova richiesta di consulenza previdenziale\n\nNOME: ${nome} ${cognome}\nEMAIL: ${email}\nTELEFONO: ${tel||'non fornito'}\nCODICE FISCALE: ${cf||'non fornito'}\nORARIO PREFERITO: ${orari}\nNOTE: ${note||'nessuna'}${riepilogo}`;
-  // Invio via mailto (fallback sempre disponibile)
-  // Prova prima formspree se configurato, altrimenti mailto
+  const dataNascitaEl=document.getElementById('dataNascita').value||'non fornita';
+  const profiloLibero=S.profilo||'non inserito';
+
+  let datiSim='NESSUNA ANALISI COMPLETATA';
+  if(c){
+    datiSim=
+      '=== DATI INSERITI NEL SIMULATORE ===\n'
+      +'Profilo libero: '+profiloLibero+'\n'
+      +'Data di nascita: '+dataNascitaEl+'\n'
+      +'Età: '+S.eta+' anni\n'
+      +'Tipo lavoro: '+S.tipo+'\n'
+      +'RAL: €'+fmt(S.ral)+'/anno\n'
+      +'Anni di contributi versati: '+S.contributi+'\n'
+      +'Fondo pensione attuale: '+S.fondo+(S.montante>0?' (montante €'+fmt(S.montante)+')':'')+'\n'
+      +'Obiettivo pensione netta: €'+fmt(S.obiettivo)+'/mese\n'
+      +'\n=== RISULTATI ANALISI AI ===\n'
+      +'Pensione INPS stimata netta: €'+fmt(c.nettoInps)+'/mese\n'
+      +'Anno pensionamento previsto: '+c.annoPens+'\n'
+      +'Anni mancanti alla pensione: '+c.anni+'\n'
+      +'Stipendio stimato al momento del pensionamento: €'+fmt(c.stipNetto)+'/mese netti\n'
+      +'RAL futura stimata: €'+fmt(c.ralFutura)+'/anno\n'
+      +'Gap vs obiettivo: €'+fmt(c.gapObj)+'/mese\n'
+      +'Gap vs stipendio al pensionamento: €'+fmt(c.gapSal)+'/mese\n'
+      +'Gap annuo: €'+fmt(c.gapSal*12)+'\n'
+      +'Gap cumulato 20 anni: €'+fmt(c.gapSal*12*20)+'\n'
+      +'Tasso di sostituzione: '+c.tasso+'%\n'
+      +(S.pdfB64?'PDF INPS caricato: Sì':'PDF INPS caricato: No');
+  }
+
+  // Corpo email leggibile
+  const corpoEmail=
+    '=== RICHIESTA CONSULENZA PREVIDENZIALE ===\n\n'
+    +'DATI PERSONALI\n'
+    +'Nome: '+nome+' '+cognome+'\n'
+    +'Email: '+email+'\n'
+    +'Telefono: '+(tel||'non fornito')+'\n'
+    +'Codice fiscale: '+cf+'\n'
+    +'Orari preferiti: '+orari+'\n'
+    +'Note: '+(note||'nessuna')+'\n\n'
+    +datiSim;
+
+  // Tentativo 1: Netlify Forms
   try{
-    // Formspree placeholder — sostituire con endpoint reale quando configurato
-    const FORMSPREE='https://formspree.io/f/YOUR_ENDPOINT';
-    const r=await fetch(FORMSPREE,{
-      method:'POST',
-      headers:{'Content-Type':'application/json','Accept':'application/json'},
-      body:JSON.stringify({name:`${nome} ${cognome}`,email,telefono:tel,codiceFiscale:cf,orari,note,riepilogoAnalisi:c?`RAL €${fmt(S.ral)} | INPS €${fmt(c.nettoInps)}/mese | Gap €${fmt(c.gapObj)}/mese | Anno ${c.annoPens}`:'n/d',_subject:`Consulenza previdenziale — ${nome} ${cognome}`})
-    });
+    const formData=new FormData();
+    formData.append('form-name','consulenza-previdenziale');
+    formData.append('nome_cognome',nome+' '+cognome);
+    formData.append('email',email);
+    formData.append('telefono',tel||'');
+    formData.append('codice_fiscale',cf);
+    formData.append('orari_preferiti',orari);
+    formData.append('note',note||'');
+    formData.append('dati_simulatore',datiSim);
+    formData.append('profilo_inserito',profiloLibero);
+    const r=await fetch('/',{method:'POST',body:formData});
     if(r.ok){showSuccess();return;}
   }catch(_){}
-  // Fallback: apri mailto
-  const mailtoUrl=`mailto:marco.buzzoni@azimut.it?subject=Consulenza previdenziale — ${encodeURIComponent(nome+' '+cognome)}&body=${encodeURIComponent(body)}`;
+
+  // Fallback: mailto con tutti i dati
+  const mailtoUrl='mailto:marco.buzzoni@azimut.it'
+    +'?subject='+encodeURIComponent('Consulenza previdenziale — '+nome+' '+cognome)
+    +'&body='+encodeURIComponent(corpoEmail);
   window.location.href=mailtoUrl;
   showSuccess();
 }
+
 function showSuccess(){
   document.getElementById('contactForm').style.display='none';
   document.getElementById('contactSuccess').style.display='';
