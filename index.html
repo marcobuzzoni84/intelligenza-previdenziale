@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="it">
+<html lang="it" style="scroll-behavior:smooth;">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -28,14 +28,14 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:cen
 .hero-proof{margin-top:60px;display:flex;align-items:center;justify-content:center;gap:40px;flex-wrap:wrap;}
 .proof-item{display:flex;flex-direction:column;align-items:center;gap:4px;}
 .proof-num{font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:600;color:var(--gold);}
-.proof-label{font-size:11px;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;}
+.proof-label{font-size:12px;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;}
 .proof-sep{width:1px;height:40px;background:var(--border);}
 /* FLOW */
 #flow{display:none;position:fixed;inset:0;z-index:200;background:var(--ink);overflow-y:auto;}
 .flow-header{display:flex;align-items:center;justify-content:space-between;padding:18px 48px;border-bottom:1px solid var(--border);background:rgba(10,13,20,.95);backdrop-filter:blur(20px);position:sticky;top:0;z-index:10;}
 .flow-logo{font-family:'Cormorant Garamond',serif;font-size:17px;font-weight:600;color:var(--gold);}.flow-logo span{color:var(--white);}
 .flow-steps{display:flex;align-items:center;gap:8px;}
-.step-dot{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;border:1px solid var(--border);color:var(--muted);transition:all .4s;cursor:default;}
+.step-dot{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;border:1px solid var(--border);color:var(--muted);transition:all .4s;cursor:default;}
 .step-dot.done{color:var(--gold);border-color:var(--gold);cursor:pointer;}
 .step-dot.done:hover{background:rgba(201,168,76,.15);}
 .step-dot.active{background:var(--gold);color:var(--ink);border-color:var(--gold);}
@@ -48,13 +48,14 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:cen
 .avatar-fig{flex-shrink:0;display:flex;flex-direction:column;align-items:center;gap:6px;}
 .avatar-circle{width:60px;height:60px;border-radius:50%;border:2px solid var(--gold);background:rgba(201,168,76,.08);display:flex;align-items:center;justify-content:center;position:relative;}
 .avatar-circle::after{content:'';position:absolute;bottom:-2px;right:-2px;width:13px;height:13px;border-radius:50%;background:var(--green);border:2px solid var(--ink);}
-.avatar-name-label{font-size:10px;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;font-weight:600;}
+.avatar-name-label{font-size:12px;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;font-weight:600;}
 .avatar-bubble{flex:1;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:4px 4px 4px 0;padding:18px 22px;font-size:14px;line-height:1.75;color:var(--muted2);position:relative;}
 .avatar-bubble::before{content:'';position:absolute;left:-8px;top:18px;border:8px solid transparent;border-right-color:var(--border);}
 .avatar-bubble::after{content:'';position:absolute;left:-6px;top:18px;border:8px solid transparent;border-right-color:rgba(255,255,255,.04);}
 .avatar-bubble strong{color:var(--white);}.avatar-bubble em{color:var(--gold);font-style:normal;}
 /* AVATAR SELECT */
 .avatar-cards{display:flex;gap:18px;margin-bottom:36px;}
+@media(max-width:400px){.btn-primary{padding:14px 20px;font-size:13px;width:100%;justify-content:center;}.hero-title{font-size:48px!important;}.cta-box{padding:20px 16px;}}
 @media(max-width:480px){.avatar-cards{flex-direction:column;}}
 .avatar-card{flex:1;border:1px solid var(--border);border-radius:6px;padding:26px 18px;text-align:center;cursor:pointer;transition:all .3s;}
 .avatar-card:hover{border-color:var(--gold);background:rgba(201,168,76,.04);}
@@ -79,8 +80,8 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:cen
 @media(max-width:580px){.fields-grid{grid-template-columns:1fr;}}
 .field-wrap{display:flex;flex-direction:column;gap:6px;}
 .field-wrap.full{grid-column:1/-1;}
-.field-label{font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--muted2);display:flex;align-items:center;gap:7px;flex-wrap:wrap;}
-.badge-req{font-size:9px;padding:2px 7px;border-radius:100px;background:rgba(201,168,76,.15);color:var(--gold);font-weight:700;}
+.field-label{font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted2);display:flex;align-items:center;gap:7px;flex-wrap:wrap;}
+.badge-req{font-size:11px;padding:2px 8px;border-radius:100px;background:rgba(201,168,76,.15);color:var(--gold);font-weight:700;}
 .badge-opt{font-size:9px;padding:2px 7px;border-radius:100px;background:rgba(107,114,128,.12);color:var(--muted);font-weight:600;}
 .field-sublabel{font-size:11px;color:var(--muted);margin-top:-2px;}
 .field-input{background:var(--surface);border:1px solid var(--border);border-radius:3px;padding:12px 14px;font-family:'DM Sans',sans-serif;font-size:14px;color:var(--white);transition:border-color .25s;outline:none;-webkit-appearance:none;width:100%;}
@@ -138,7 +139,7 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.4) sepia(1) s
 .privacy-note{font-size:11px;color:var(--muted);margin-top:8px;display:flex;align-items:flex-start;gap:5px;line-height:1.5;}
 .privacy-note::before{content:'🔒';flex-shrink:0;}
 /* BUTTONS */
-.btn-primary{display:inline-flex;align-items:center;gap:10px;background:var(--gold);color:var(--ink);font-size:13px;font-weight:600;letter-spacing:.06em;padding:14px 32px;border-radius:2px;border:none;cursor:pointer;transition:all .3s;text-transform:uppercase;font-family:'DM Sans',sans-serif;}
+.btn-primary{display:inline-flex;align-items:center;gap:10px;background:var(--gold);color:var(--ink);font-size:13px;font-weight:600;letter-spacing:.06em;padding:16px 36px;border-radius:3px;border:none;cursor:pointer;transition:all .3s;text-transform:uppercase;font-family:'DM Sans',sans-serif;}
 .btn-primary:hover{background:var(--gold2);transform:translateY(-1px);}
 .btn-primary:disabled{opacity:.4;cursor:not-allowed;transform:none;}
 .btn-secondary{display:inline-flex;align-items:center;gap:7px;background:transparent;color:var(--muted2);font-size:13px;padding:14px 18px;border:none;cursor:pointer;transition:color .2s;font-family:'DM Sans',sans-serif;}
@@ -158,7 +159,7 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.4) sepia(1) s
 .gap-card-badge{position:absolute;top:11px;right:11px;font-size:9px;padding:2px 7px;border-radius:100px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;}
 .gap-card-badge.obj{background:rgba(201,168,76,.15);color:var(--gold);}
 .gap-card-badge.sal{background:rgba(156,163,175,.1);color:var(--muted2);}
-.gap-card-label{font-size:10px;letter-spacing:.1em;color:var(--muted);text-transform:uppercase;margin-bottom:7px;}
+.gap-card-label{font-size:12px;letter-spacing:.06em;color:var(--muted);text-transform:uppercase;margin-bottom:7px;}
 .gap-card-amount{font-family:'Cormorant Garamond',serif;font-size:clamp(34px,5vw,50px);font-weight:600;line-height:1;margin-bottom:5px;}
 .gap-card-amount.neg{color:var(--red);}.gap-card-amount.pos{color:var(--green);}
 .gap-card-sub{font-size:11px;color:var(--muted2);line-height:1.5;}
@@ -167,9 +168,9 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.4) sepia(1) s
 .result-kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:18px;}
 @media(max-width:540px){.result-kpis{grid-template-columns:1fr;}}
 .kpi-card{background:var(--surface);border:1px solid var(--border);border-radius:4px;padding:18px;}
-.kpi-label{font-size:10px;letter-spacing:.1em;color:var(--muted);text-transform:uppercase;margin-bottom:7px;}
-.kpi-val{font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:600;color:var(--white);margin-bottom:3px;}
-.kpi-sub{font-size:10px;color:var(--muted);}
+.kpi-label{font-size:12px;letter-spacing:.08em;color:var(--muted);text-transform:uppercase;margin-bottom:7px;}
+.kpi-val{font-family:'Cormorant Garamond',serif;font-size:34px;font-weight:600;color:var(--white);margin-bottom:3px;}
+.kpi-sub{font-size:12px;color:var(--muted);}
 .narrative{background:var(--surface);border:1px solid var(--border);border-radius:4px;padding:24px;margin-bottom:18px;font-size:14px;line-height:1.85;color:var(--muted2);}
 .narrative strong{color:var(--white);}.narrative h3{font-family:'Cormorant Garamond',serif;font-size:20px;color:var(--gold);margin:16px 0 7px;}
 .narrative ul{padding-left:18px;margin:7px 0;}.narrative li{margin-bottom:5px;}
@@ -201,8 +202,8 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.4) sepia(1) s
 .chat-send:hover{background:var(--gold2);}.chat-send:disabled{opacity:.4;cursor:not-allowed;}
 /* CTA BOX */
 .cta-box{background:linear-gradient(135deg,rgba(201,168,76,.1),rgba(201,168,76,.03));border:1px solid var(--gold);border-radius:6px;padding:30px;text-align:center;margin-top:32px;}
-.cta-box h3{font-family:'Cormorant Garamond',serif;font-size:26px;margin-bottom:8px;}
-.cta-box p{font-size:13px;color:var(--muted2);margin-bottom:18px;}
+.cta-box h3{font-family:'Cormorant Garamond',serif;font-size:30px;margin-bottom:10px;}
+.cta-box p{font-size:14px;color:var(--muted2);margin-bottom:18px;}
 /* WARN MODAL */
 #warnModal{display:none;position:fixed;inset:0;z-index:500;background:rgba(10,13,20,.88);backdrop-filter:blur(10px);align-items:center;justify-content:center;padding:24px;}
 #warnModal.open{display:flex;}
@@ -224,7 +225,7 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.4) sepia(1) s
 .contact-field{display:flex;flex-direction:column;gap:6px;}
 .contact-field.full{grid-column:1/-1;}
 .contact-label{font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--muted2);display:flex;align-items:center;gap:6px;}
-.contact-input{background:var(--surface);border:1px solid var(--border);border-radius:3px;padding:12px 14px;font-family:'DM Sans',sans-serif;font-size:14px;color:var(--white);outline:none;width:100%;transition:border-color .25s;}
+.contact-input{background:var(--surface);border:1px solid var(--border);border-radius:3px;padding:13px 14px;font-family:'DM Sans',sans-serif;font-size:14px;color:var(--white);outline:none;width:100%;transition:border-color .25s;}
 .contact-input:focus{border-color:var(--gold);}
 .contact-input::placeholder{color:var(--muted);}
 .contact-input.cerror{border-color:var(--red);}
@@ -251,7 +252,32 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.4) sepia(1) s
 .pdf-step-content code{background:rgba(255,255,255,.08);padding:2px 6px;border-radius:3px;font-family:'DM Mono',monospace;font-size:11px;color:var(--gold3);}
 .fade-in{animation:fadeIn .5s ease forwards;}
 @keyframes fadeIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
-@media(max-width:600px){nav{padding:14px 20px;}.flow-header{padding:14px 20px;}.step-content{padding:36px 18px 80px;}.avatar-scene{flex-direction:column;}.avatar-bubble::before,.avatar-bubble::after{display:none;}}
+@media(max-width:600px){nav{padding:14px 20px;}.flow-header{padding:14px 20px;}.step-content{padding:36px 18px 80px;}.avatar-scene{flex-direction:column;}.avatar-bubble::before,.avatar-bubble::after{display:none;}.contact-grid{grid-template-columns:1fr!important;}.cta-box{padding:22px 18px;}.chat-input-row{flex-direction:column;gap:8px;}.send-btn{width:100%;justify-content:center;padding:13px;}.gap-grid{grid-template-columns:1fr;}.result-kpis{grid-template-columns:1fr;}.kpi-val{font-size:28px;}}
+
+/* ── BIO SECTION ─────────────────────────────────────────────── */
+.bio-section{border-top:1px solid var(--border);padding-top:36px;margin-top:36px;}
+.bio-header{display:flex;align-items:center;gap:18px;margin-bottom:20px;}
+.bio-avatar-circle{width:58px;height:58px;border-radius:50%;background:linear-gradient(135deg,rgba(201,168,76,.2),rgba(201,168,76,.05));border:2px solid var(--gold);display:flex;align-items:center;justify-content:center;font-size:26px;flex-shrink:0;}
+.bio-title-block{}
+.bio-name{font-family:'Cormorant Garamond',serif;font-size:22px;color:var(--white);margin-bottom:2px;}
+.bio-role{font-size:12px;color:var(--gold);letter-spacing:.1em;text-transform:uppercase;}
+.bio-intro{font-size:13px;color:var(--muted2);line-height:1.6;margin-bottom:18px;}
+.bio-tags{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:22px;}
+.bio-tag{font-size:11px;padding:4px 11px;border:1px solid var(--border);border-radius:100px;color:var(--muted2);cursor:pointer;transition:all .2s;}
+.bio-tag:hover{border-color:var(--gold);color:var(--gold);}
+.bio-chat{background:var(--surface);border:1px solid var(--border);border-radius:6px;overflow:hidden;}
+.bio-messages{display:flex;flex-direction:column;gap:12px;padding:18px;max-height:320px;overflow-y:auto;}
+.bio-msg{display:flex;gap:10px;align-items:flex-start;}
+.bio-msg.user{flex-direction:row-reverse;}
+.bio-msg-bubble{font-size:13px;line-height:1.6;padding:10px 14px;border-radius:6px;max-width:82%;}
+.bio-msg.ai .bio-msg-bubble{background:var(--ink2);color:var(--muted2);}
+.bio-msg.user .bio-msg-bubble{background:rgba(201,168,76,.12);color:var(--white);border:1px solid rgba(201,168,76,.2);}
+.bio-msg-av{width:28px;height:28px;border-radius:50%;background:rgba(201,168,76,.15);border:1px solid var(--gold);display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0;font-weight:600;color:var(--gold);}
+.bio-input-row{display:flex;gap:8px;padding:12px 14px;border-top:1px solid var(--border);}
+.bio-input{flex:1;background:transparent;border:none;color:var(--white);font-size:14px;outline:none;font-family:'DM Sans',sans-serif;}
+.bio-input::placeholder{color:var(--muted);}
+.bio-send{background:var(--gold);color:var(--ink);border:none;border-radius:3px;padding:8px 16px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;}
+.bio-send:disabled{opacity:.4;cursor:default;}
 </style>
 </head>
 <body>
@@ -579,6 +605,40 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.4) sepia(1) s
           </button>
         </div>
       </div>
+
+      <!-- BIO INTERATTIVA MARCO BUZZONI -->
+      <div class="bio-section fade-in">
+        <div class="bio-header">
+          <div class="bio-avatar-circle">👨‍💼</div>
+          <div class="bio-title-block">
+            <div class="bio-name">Marco Buzzoni</div>
+            <div class="bio-role">Consulente Finanziario · Azimut · Lecco</div>
+          </div>
+        </div>
+        <div class="bio-intro">Hai domande su chi ti seguirà? Chiedi all'AI — risponde con informazioni reali su Marco Buzzoni.</div>
+        <div class="bio-tags">
+          <span class="bio-tag" onclick="askBio('Chi è Marco Buzzoni?')">Chi è?</span>
+          <span class="bio-tag" onclick="askBio('Quanta esperienza ha?')">Esperienza</span>
+          <span class="bio-tag" onclick="askBio('Come lavora con i clienti?')">Metodo di lavoro</span>
+          <span class="bio-tag" onclick="askBio('Quante famiglie segue?')">Clienti seguiti</span>
+          <span class="bio-tag" onclick="askBio('Dove si trova il suo ufficio?')">Dove trovarlo</span>
+          <span class="bio-tag" onclick="askBio('Perché ha scelto questo lavoro?')">La sua storia</span>
+          <span class="bio-tag" onclick="askBio('Cosa lo differenzia da altri consulenti?')">Differenze</span>
+        </div>
+        <div class="bio-chat">
+          <div class="bio-messages" id="bioMessages">
+            <div class="bio-msg ai">
+              <div class="bio-msg-av">MB</div>
+              <div class="bio-msg-bubble">Ciao! Sono l'assistente AI di Marco Buzzoni. Puoi chiedermi qualsiasi cosa su di lui — la sua esperienza, il suo metodo di lavoro, dove opera. Usa i tag sopra o scrivi liberamente.</div>
+            </div>
+          </div>
+          <div class="bio-input-row">
+            <input class="bio-input" id="bioIn" type="text" placeholder="Es. quanti anni di esperienza ha?" onkeydown="if(event.key==='Enter')sendBio()">
+            <button class="bio-send" id="bioSend" onclick="sendBio()">Invia →</button>
+          </div>
+        </div>
+      </div>
+
       <!-- CTA -->
       <div class="cta-box fade-in">
         <h3>Parla con Marco Buzzoni</h3>
@@ -741,6 +801,142 @@ async function goStep2(skip){
 function goStep1Back(){hide('step2');show('step1');setDot(1);scrollTop();}
 
 // Navigazione cliccando sui pallini (solo indietro, non avanti)
+
+// ── BIO MARCO BUZZONI ─────────────────────────────────────────
+const MARCO_BIO = `Sei l'assistente AI personale di Marco Buzzoni, consulente finanziario. Rispondi SOLO con informazioni reali su Marco Buzzoni basandoti su questi dati certi. Se ti chiedono qualcosa che non è in questi dati, dillo onestamente.
+
+STILE DI RISPOSTA OBBLIGATORIO:
+- Scrivi sempre in modo discorsivo e narrativo, come se stessi raccontando di una persona che conosci bene
+- MAI elenchi puntati, MAI trattini, MAI liste numerate
+- Usa paragrafi fluidi con frasi connesse tra loro
+- Tono caldo e diretto, come in una conversazione naturale
+- Max 120 parole per risposta
+
+PROFILO COMPLETO DI MARCO BUZZONI:
+
+CARRIERA:
+- Inizia nel 2006 come cassiere in Deutsche Bank, zona Lecco, prima ancora di laurearsi
+- Da subito si occupa di investimenti: prima clientela mass market, poi affluent
+- 2007-2010: cresce come consulente investimenti Deutsche Bank
+- 2010 (a 25 anni): nominato Direttore di Sportello Deutsche Bank — il più giovane della zona
+- Rimane Direttore Deutsche Bank fino al 2015
+- 2015: lascia il posto fisso bancario per aprire Partita IVA e iniziare come consulente finanziario indipendente con Azimut Capital Management
+- Oggi lavora come agente Azimut, ufficio in Via Balicco 101, Lecco
+- Segue circa 100 famiglie tra Lecco, Monza e Milano
+
+FORMAZIONE:
+- Liceo Scientifico Don Gnocchi, Carate Brianza
+- Laurea Triennale in Scienze Bancarie Finanziarie Assicurative, Università Cattolica del Sacro Cuore
+- Laurea Magistrale nella stessa facoltà, curriculum Banca e Mercati
+- Ha frequentato corsi su internet banking applicato (innovativo per il 2008-2009)
+- Ha avviato studi di Storia alla Statale di Milano (non completati)
+- Formazione continua: 100 ore/anno obbligatorie, più seminari di competitor e ricerche di mercato
+
+SPECIALIZZAZIONI:
+- Previdenza complementare (dal 2007 — quasi tutta la sua carriera)
+- Asset allocation e portafogli efficienti
+- Polizze vita per protezione e trasmissione del patrimonio
+- Si definisce "consulente patrimoniale"
+
+METODO DI LAVORO:
+- Ascolto come pilastro fondamentale: capire bisogni e desiderata del cliente PRIMA di qualsiasi proposta
+- Approccio scientifico e matematico all'asset allocation
+- Visione di lungo periodo — ogni soluzione è un "progetto di vita"
+- Ha lasciato la banca proprio perché rifiutava di imporre prodotti ai clienti senza ascoltarli prima
+- Consulenza principalmente di persona; disponibile anche in videocall
+
+PREVIDENZA COMPLEMENTARE:
+- Si occupa di fondi pensione dal 2007, fin dai tempi di Deutsche Bank (collocava il PIP Zurich)
+- Oggi consiglia fondi pensione aperti, più trasparenti e meno onerosi
+- Quasi la totalità dei suoi clienti ha avuto accesso a informazioni sui fondi pensione
+- Recente soddisfazione professionale: ha implementato un piano welfare aziendale per una scuola dell'infanzia dove fa volontariato — le insegnanti ora versano il TFR nel fondo pensione e ricevono un contributo del 4% dal datore di lavoro
+
+PERSONA:
+- 41 anni, vive e lavora nella zona di Lecco
+- Ha scelto la finanza per passione, fin dalle scuole medie
+- Ha lasciato la carriera bancaria a 29 anni per libertà professionale e coerenza con i propri valori
+- Volontario nel consiglio di amministrazione di una scuola dell'infanzia
+- Volontario in un circolo di scacchi
+- Ama il lavoro perché unisce competenze tecniche e relazioni umane
+- La soddisfazione più grande: la fiducia dei clienti e sapere che traggono reale utilità dal suo lavoro
+
+COSA LO DIFFERENZIA:
+- Non impone mai prodotti: ascolta prima, poi propone
+- Non è un dipendente bancario con obiettivi commerciali imposti
+- 19 anni di esperienza nel settore, di cui 10 come indipendente
+- Conosce il sistema bancario dall'interno (9 anni Deutsche Bank, inclusi 5 da direttore)
+- Si è specializzato in previdenza complementare quando ancora non era comune farlo`;
+
+const bioBubble = (text, role) => {
+  const div = document.createElement('div');
+  div.className = 'bio-msg ' + role + ' fade-in';
+  const av = document.createElement('div');
+  av.className = 'bio-msg-av';
+  av.textContent = role === 'ai' ? 'MB' : 'Tu';
+  const bubble = document.createElement('div');
+  bubble.className = 'bio-msg-bubble';
+  bubble.textContent = text;
+  if(role === 'ai') { div.appendChild(av); div.appendChild(bubble); }
+  else { div.appendChild(bubble); div.appendChild(av); }
+  return div;
+};
+
+const bioHistory = [];
+
+async function sendBio() {
+  const inp = document.getElementById('bioIn');
+  const msg = inp.value.trim();
+  if(!msg) return;
+  inp.value = '';
+  const btn = document.getElementById('bioSend');
+  btn.disabled = true;
+  const wrap = document.getElementById('bioMessages');
+  wrap.appendChild(bioBubble(msg, 'user'));
+  wrap.scrollTop = wrap.scrollHeight;
+
+  // typing indicator
+  const typing = document.createElement('div');
+  typing.className = 'bio-msg ai';
+  typing.innerHTML = '<div class="bio-msg-av">MB</div><div class="bio-msg-bubble" style="color:var(--muted)">...</div>';
+  wrap.appendChild(typing);
+  wrap.scrollTop = wrap.scrollHeight;
+
+  try {
+    bioHistory.push({role:'user', content: msg});
+    const msgs = bioHistory.length > 8 ? bioHistory.slice(-8) : bioHistory;
+
+    const isNetlify = window.location.hostname.includes('netlify.app') || window.location.hostname.includes('intelligenzaprevidenziale.com');
+    const apiUrl = isNetlify ? '/.netlify/functions/claude' : 'https://api.anthropic.com/v1/messages';
+
+    const r = await fetch(apiUrl, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 400,
+        system: MARCO_BIO,
+        messages: msgs
+      })
+    });
+    const data = await r.json();
+    const reply = data.content[0].text;
+    bioHistory.push({role:'assistant', content: reply});
+    typing.remove();
+    wrap.appendChild(bioBubble(reply, 'ai'));
+    wrap.scrollTop = wrap.scrollHeight;
+  } catch(e) {
+    typing.remove();
+    wrap.appendChild(bioBubble('Problema tecnico. Riprova tra un momento.', 'ai'));
+  }
+  btn.disabled = false;
+}
+
+function askBio(question) {
+  document.getElementById('bioIn').value = question;
+  sendBio();
+}
+
+
 function navDot(n){
   // Determina lo step corrente
   const steps=['step0','step1','step2','step3'];
