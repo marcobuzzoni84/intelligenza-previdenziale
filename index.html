@@ -257,7 +257,7 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.4) sepia(1) s
 /* ── BIO SECTION ─────────────────────────────────────────────── */
 .bio-section{border-top:1px solid var(--border);padding-top:36px;margin-top:36px;}
 .bio-header{display:flex;align-items:center;gap:18px;margin-bottom:20px;}
-.bio-avatar-circle{width:58px;height:58px;border-radius:50%;background:linear-gradient(135deg,rgba(201,168,76,.2),rgba(201,168,76,.05));border:2px solid var(--gold);display:flex;align-items:center;justify-content:center;font-size:26px;flex-shrink:0;}
+.bio-avatar-circle{width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,rgba(201,168,76,.2),rgba(201,168,76,.05));border:2px solid var(--gold);display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;color:var(--gold);flex-shrink:0;overflow:hidden;}
 .bio-title-block{}
 .bio-name{font-family:'Cormorant Garamond',serif;font-size:22px;color:var(--white);margin-bottom:2px;}
 .bio-role{font-size:12px;color:var(--gold);letter-spacing:.1em;text-transform:uppercase;}
@@ -278,6 +278,44 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.4) sepia(1) s
 .bio-input::placeholder{color:var(--muted);}
 .bio-send{background:var(--gold);color:var(--ink);border:none;border-radius:3px;padding:8px 16px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;}
 .bio-send:disabled{opacity:.4;cursor:default;}
+
+/* ── SCORING ─────────────────────────────────────────────────── */
+.score-badge{display:flex;align-items:center;gap:16px;padding:16px 20px;border-radius:8px;margin-bottom:18px;border:1px solid;display:none;}
+.score-badge.ok    {background:rgba(52,199,89,.07);  border-color:rgba(52,199,89,.35);}
+.score-badge.warn  {background:rgba(255,204,0,.07);  border-color:rgba(255,204,0,.35);}
+.score-badge.alert {background:rgba(255,120,30,.07); border-color:rgba(255,120,30,.35);}
+.score-badge.danger{background:rgba(220,50,50,.07);  border-color:rgba(220,50,50,.4);}
+.score-indicator{display:flex;flex-direction:column;align-items:center;gap:6px;flex-shrink:0;}
+.score-dot{width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;}
+.score-badge.ok     .score-dot{background:radial-gradient(circle at 35% 35%,#5ef08a,#23c25e);box-shadow:0 0 18px rgba(52,199,89,.55);}
+.score-badge.warn   .score-dot{background:radial-gradient(circle at 35% 35%,#ffe566,#e6b800);box-shadow:0 0 18px rgba(255,204,0,.5);}
+.score-badge.alert  .score-dot{background:radial-gradient(circle at 35% 35%,#ffaa55,#e06010);box-shadow:0 0 18px rgba(255,120,30,.5);}
+.score-badge.danger .score-dot{background:radial-gradient(circle at 35% 35%,#ff6060,#c02020);box-shadow:0 0 24px rgba(220,50,50,.65);}
+.score-dot-icon{font-size:14px;font-weight:900;color:#fff;font-family:'DM Mono',monospace;letter-spacing:-.02em;line-height:1;}
+.score-bar{display:flex;gap:3px;}
+.score-bar span{width:9px;height:4px;border-radius:2px;background:rgba(255,255,255,.12);}
+.score-badge.ok     .score-bar span:nth-child(1){background:#34c759;}
+.score-badge.warn   .score-bar span:nth-child(1),
+.score-badge.warn   .score-bar span:nth-child(2){background:#ffcc00;}
+.score-badge.alert  .score-bar span:nth-child(1),
+.score-badge.alert  .score-bar span:nth-child(2),
+.score-badge.alert  .score-bar span:nth-child(3){background:#ff781e;}
+.score-badge.danger .score-bar span{background:#dc3232;}
+.score-text{flex:1;}
+.score-label{font-size:14px;font-weight:700;margin-bottom:3px;letter-spacing:.01em;}
+.score-badge.ok     .score-label{color:#34c759;}
+.score-badge.warn   .score-label{color:#e6b800;}
+.score-badge.alert  .score-label{color:#ff781e;}
+.score-badge.danger .score-label{color:#dc3232;}
+.score-sub{font-size:12px;color:var(--muted2);line-height:1.55;}
+
+/* ── HERO COMBO AI + CONSULENTE ──────────────────────────────── */
+.hero-combo{display:flex;align-items:center;flex-wrap:wrap;justify-content:center;gap:10px;margin-bottom:32px;margin-top:-8px;}
+.combo-pill{display:inline-flex;align-items:center;gap:6px;padding:7px 16px;border-radius:100px;font-size:13px;font-weight:600;letter-spacing:.02em;}
+.combo-pill.ai{background:rgba(201,168,76,.12);border:1px solid rgba(201,168,76,.35);color:var(--gold);}
+.combo-pill.human{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.18);color:var(--white);}
+.combo-plus{font-size:18px;font-weight:700;color:var(--gold);opacity:.7;}
+.combo-claim{width:100%;text-align:center;font-size:12px;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;margin-top:-2px;}
 </style>
 </head>
 <body>
@@ -305,6 +343,12 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.4) sepia(1) s
     <div class="hero-badge">Analisi previdenziale AI · Senza SPID · Gratuita</div>
     <h1 class="hero-h1">Il tuo piano per<br>colmare il <em>gap previdenziale</em></h1>
     <p class="hero-sub">Scopri quanto reddito potrebbe mancare in pensione e come prepararti oggi.</p>
+    <div class="hero-combo">
+      <span class="combo-pill ai">🤖 Intelligenza Artificiale</span>
+      <span class="combo-plus">+</span>
+      <span class="combo-pill human">👨‍💼 Consulente Finanziario Certificato</span>
+      <span class="combo-claim">L'unica combinazione che fa davvero la differenza</span>
+    </div>
     <button class="hero-cta" onclick="startFlow()">
       Inizia l'analisi gratuita
       <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
@@ -495,9 +539,20 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.4) sepia(1) s
         </div>
       </div>
       <div class="field-wrap full" id="fondoBox" style="display:none;">
-        <div class="field-label">Montante attuale fondo pensione (€)</div>
-        <div class="euro-input"><span class="euro-sign">€</span>
-          <input class="field-input" type="number" id="montante" placeholder="Es: 25000" min="0">
+        <div class="field-wrap">
+          <div class="field-label">Montante accumulato fondo pensione <span class="badge-req">obbligatorio</span></div>
+          <div class="euro-input"><span class="euro-sign">€</span>
+            <input class="field-input" type="number" id="montante" placeholder="Es: 25.000" min="0">
+          </div>
+          <div class="field-error" id="errMontante">Inserisci il montante accumulato</div>
+        </div>
+        <div class="field-wrap" style="margin-top:14px;">
+          <div class="field-label">Versamento annuale al fondo <span class="badge-req">obbligatorio</span></div>
+          <div class="euro-input"><span class="euro-sign">€</span>
+            <input class="field-input" type="number" id="versamentoAnnuo" placeholder="Es: 2.400" min="0">
+          </div>
+          <div class="field-sublabel">Somma di contributo lavoratore + eventuale contributo datore</div>
+          <div class="field-error" id="errVersamento">Inserisci il versamento annuale</div>
         </div>
       </div>
     </div>
@@ -551,23 +606,34 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.4) sepia(1) s
       <!-- GAP CARDS -->
       <div class="gap-grid fade-in">
         <div class="gap-card primary">
-          <div class="gap-card-badge obj">Vs. obiettivo</div>
+          <div class="gap-card-badge obj"></div>
           <div class="gap-card-label">Gap rispetto al tuo obiettivo</div>
           <div class="gap-card-amount neg" id="gapObj">—</div>
           <div class="gap-card-sub" id="gapObjSub">—</div>
         </div>
         <div class="gap-card secondary">
-          <div class="gap-card-badge sal">Vs. stipendio al pensionamento</div>
+          <div class="gap-card-badge sal"></div>
           <div class="gap-card-label">Gap rispetto al tuo stipendio stimato al pensionamento</div>
           <div class="gap-card-amount neg" id="gapSal">—</div>
           <div class="gap-card-sub" id="gapSalSub">—</div>
         </div>
       </div>
       <div class="salary-estimate fade-in" id="salaryNote"></div>
+      <div id="scoreBadge" class="score-badge fade-in">
+        <div class="score-indicator">
+          <div class="score-dot"><span class="score-dot-icon" id="scoreDotIcon"></span></div>
+          <div class="score-bar"><span></span><span></span><span></span><span></span></div>
+        </div>
+        <div class="score-text">
+          <div class="score-label" id="scoreLabel"></div>
+          <div class="score-sub" id="scoreSub"></div>
+        </div>
+      </div>
       <div class="result-kpis fade-in">
         <div class="kpi-card"><div class="kpi-label">Pensione INPS stimata</div><div class="kpi-val" id="kpiInps">—</div><div class="kpi-sub">netto/mese</div></div>
+        <div class="kpi-card" id="kpiFondoRow" style="display:none;"><div class="kpi-label">Rendita fondo pensione</div><div class="kpi-val" id="kpiFondoVal" style="color:#34c759;">—</div><div class="kpi-sub">stima netta/mese</div></div>
         <div class="kpi-card"><div class="kpi-label">Anno pensionamento</div><div class="kpi-val" id="kpiAnno">—</div><div class="kpi-sub" id="kpiAnnoSub">—</div></div>
-        <div class="kpi-card"><div class="kpi-label">Tasso sostituzione</div><div class="kpi-val" id="kpiTasso">—</div><div class="kpi-sub">pensione / stipendio al pensionamento</div></div>
+        <div class="kpi-card"><div class="kpi-label">Copertura pensionistica</div><div class="kpi-val" id="kpiTasso">—</div><div class="kpi-sub">pensione / stipendio al pensionamento</div></div>
       </div>
       <!-- AVATAR CONCLUSIONE AI + NARRATIVE (sezione unificata) -->
       <div style="margin:24px 0 6px;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.15em;color:var(--gold);text-transform:uppercase;display:none;" id="avConclusionLabel">💬 Analisi di <span id="avConcNameLabel">Luca</span></div>
@@ -609,7 +675,7 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.4) sepia(1) s
       <!-- BIO INTERATTIVA MARCO BUZZONI -->
       <div class="bio-section fade-in">
         <div class="bio-header">
-          <div class="bio-avatar-circle">👨‍💼</div>
+          <div class="bio-avatar-circle"><img id="marcoPhoto" src="marco-buzzoni.jpg" alt="Marco Buzzoni" onerror="this.style.display='none';this.parentNode.innerHTML='MB'" style="width:100%;height:100%;object-fit:cover;border-radius:50%;"></div>
           <div class="bio-title-block">
             <div class="bio-name">Marco Buzzoni</div>
             <div class="bio-role">Consulente Finanziario · Azimut · Lecco</div>
@@ -752,7 +818,7 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.4) sepia(1) s
 </div>
 
 <script>
-const S={avatar:'M',profilo:'',nome:'',cognome:'',email:'',dataNascita:null,eta:0,tipo:'Dipendente privato',ral:47500,contributi:15,fondo:'Non ancora',montante:0,obiettivo:2500,pdfB64:null,pdfName:'',history:[],parsed:null,fieldsLocked:false};
+const S={avatar:'M',profilo:'',nome:'',cognome:'',email:'',dataNascita:null,eta:0,tipo:'Dipendente privato',ral:47500,contributi:15,fondo:'Non ancora',montante:0,versamentoAnnuo:0,obiettivo:2500,pdfB64:null,pdfName:'',history:[],parsed:null,fieldsLocked:false};
 const AV={M:{emoji:'👨‍💼',name:'Luca'},F:{emoji:'👩‍💼',name:'Sofia'}};
 const WAGE=0.015;
 
@@ -1141,6 +1207,16 @@ function validate(){
   if(!document.getElementById('dataNascita').value){
     document.getElementById('errData').style.display='block';document.getElementById('dataNascita').classList.add('error');ok=false;
   }else{document.getElementById('errData').style.display='none';document.getElementById('dataNascita').classList.remove('error');}
+  // Validate fondo fields if user has fondo
+  const hasFondo = document.querySelector('#grpFondo .selected') && document.querySelector('#grpFondo .selected').textContent.includes('ce l');
+  if(hasFondo){
+    const mont=document.getElementById('montante').value;
+    const vers=document.getElementById('versamentoAnnuo').value;
+    if(!mont||parseInt(mont)<0){document.getElementById('errMontante').style.display='block';ok=false;}
+    else{document.getElementById('errMontante').style.display='none';}
+    if(!vers||parseInt(vers)<0){document.getElementById('errVersamento').style.display='block';ok=false;}
+    else{document.getElementById('errVersamento').style.display='none';}
+  }
   return ok;
 }
 function collect(){
@@ -1153,6 +1229,7 @@ function collect(){
   S.contributi=parseInt(document.getElementById('contributi').value)||15;
   S.obiettivo=parseInt(document.getElementById('obiettivo').value)||2500;
   S.montante=parseInt(document.getElementById('montante').value)||0;
+  S.versamentoAnnuo=parseInt(document.getElementById('versamentoAnnuo').value)||0;
   const t=document.querySelector('#grpTipo .selected');if(t)S.tipo=t.textContent.trim();
   const f=document.querySelector('#grpFondo .selected');if(f)S.fondo=f.textContent.trim();
 }
@@ -1181,7 +1258,18 @@ function calcBase(){
   const irpef=lordo<1500?0.20:lordo<2800?0.25:0.33;
   const nettoInps=Math.round(lordo*(1-irpef*0.78));
   const stip=stimaStip(S.ral,anni,S.tipo);
-  return{nettoInps,gapObj:S.obiettivo-nettoInps,gapSal:stip.netto-nettoInps,anni,tasso:Math.round(nettoInps/stip.netto*100),annoPens:S.dataNascita?S.dataNascita.getFullYear()+67:new Date().getFullYear()+anni,ralFutura:stip.ralFutura,stipNetto:stip.netto};
+  // Fondo pensione complementare: montante attuale rivalutato + versamenti futuri capitalizzati
+  // Rendimento netto annuo stimato conservativo 3%
+  const hasFondo = S.fondo.includes('ce l');
+  const r=0.03;
+  const fondoFuturo = hasFondo
+    ? Math.round(S.montante * Math.pow(1+r, anni) + S.versamentoAnnuo * ((Math.pow(1+r,anni)-1)/r))
+    : 0;
+  // Rendita mensile fondo: diviso 20 anni attesa vita (240 mesi), tassata al 15% (aliquota media)
+  const rendFondoLordo = fondoFuturo > 0 ? fondoFuturo / 240 : 0;
+  const rendFondoNetto = Math.round(rendFondoLordo * 0.85);
+  const pensioneTotaleNetta = nettoInps + rendFondoNetto;
+  return{nettoInps,rendFondoNetto,pensioneTotaleNetta,fondoFuturo,gapObj:S.obiettivo-pensioneTotaleNetta,gapSal:stip.netto-pensioneTotaleNetta,anni,tasso:Math.round(pensioneTotaleNetta/stip.netto*100),annoPens:S.dataNascita?S.dataNascita.getFullYear()+67:new Date().getFullYear()+anni,ralFutura:stip.ralFutura,stipNetto:stip.netto};
 }
 function fmt(n){return Math.round(n).toLocaleString('it-IT');}
 function fmtGap(g){return g>0?`- €\u00a0${fmt(g)}/mese`:`+ €\u00a0${fmt(Math.abs(g))}/mese`;}
@@ -1211,9 +1299,48 @@ async function doAnalysis(){
   document.getElementById('gapSalSub').textContent=`al mese vs. il tuo stipendio netto stimato al pensionamento (€\u00a0${fmt(c.stipNetto)}/mese nel ${c.annoPens})`;
   document.getElementById('salaryNote').innerHTML=`<strong>Come stimiamo l'ultimo stipendio:</strong> RAL attuale €\u00a0${fmt(S.ral)} × <strong>+1,5%/anno</strong> per <strong>${c.anni} anni</strong> (fonte ISTAT: crescita media +12% nominale in 10 anni; accelerazione +2,5-3,1% nel 2023-25; adottiamo 1,5% conservativo) = RAL futura €\u00a0${fmt(c.ralFutura)} → <strong>netto mensile €\u00a0${fmt(c.stipNetto)}</strong>.`;
   document.getElementById('kpiInps').textContent=`€\u00a0${fmt(c.nettoInps)}`;
+  // Show fondo line if present
+  const fondoKpiEl=document.getElementById('kpiFondoRow');
+  if(fondoKpiEl){
+    if(c.rendFondoNetto>0){
+      fondoKpiEl.style.display='';
+      document.getElementById('kpiFondoVal').textContent=`+€\u00a0${fmt(c.rendFondoNetto)}/mese`;
+    } else {
+      fondoKpiEl.style.display='none';
+    }
+  }
   document.getElementById('kpiAnno').textContent=`${c.annoPens}`;
   document.getElementById('kpiAnnoSub').textContent=`tra ${c.anni} anni (età 67)`;
   document.getElementById('kpiTasso').textContent=`${c.tasso}%`;
+
+  // ── SCORING ──────────────────────────────────────────────────
+  (function(){
+    const gapPct = c.gapSal > 0 ? (c.gapSal / c.stipNetto) * 100 : 0;
+    const badge = document.getElementById('scoreBadge');
+    let cls, icon, label, sub;
+    if (gapPct <= 5) {
+      cls='ok';    icon='✔';
+      label='Tutto ok — la tua copertura pensionistica è solida';
+      sub='Il gap è contenuto. Un piccolo affinamento può comunque ottimizzare la situazione.';
+    } else if (gapPct <= 20) {
+      cls='warn';  icon='!';
+      label='Abbastanza bene — manca poco per ottimizzare';
+      sub='Il gap è gestibile, ma vale la pena capire come colmarlo nel modo più efficiente.';
+    } else if (gapPct <= 40) {
+      cls='alert'; icon='!!';
+      label='Fai presto — non sei messo male, ma è ora di attivarsi';
+      sub='Il tempo è ancora dalla tua parte, ma ogni anno che passa conta.';
+    } else {
+      cls='danger'; icon='!!!';
+      label='Sveglia — prima che sia troppo tardi';
+      sub='Il gap è significativo. Intervenire oggi fa una differenza enorme rispetto ad aspettare.';
+    }
+    badge.className = 'score-badge fade-in ' + cls;
+    document.getElementById('scoreDotIcon').textContent = icon;
+    document.getElementById('scoreLabel').textContent = label;
+    document.getElementById('scoreSub').textContent = sub;
+    badge.style.display = 'flex';
+  })();
   if(S.pdfB64)document.getElementById('resultPdfBox').style.display='none';
 
   try{
@@ -1260,10 +1387,10 @@ function buildPrompt(c){
     +tfrNote+'\n'
     +saluto+'\n\n'
     +'PROFILO: "'+( S.profilo||'non specificato')+'"\n'
-    +'DATI: età '+S.eta+'a | '+S.tipo+' | RAL €'+fmt(S.ral)+' | '+S.contributi+' anni contributi | Fondo: '+S.fondo+fondoNote+'\n'
+    +'DATI: età '+S.eta+'a | '+S.tipo+' | RAL €'+fmt(S.ral)+' | '+S.contributi+' anni contributi | Fondo: '+S.fondo+fondoNote+(c.rendFondoNetto>0?' | Montante fondo €'+fmt(S.montante)+' | Versamento annuo €'+fmt(S.versamentoAnnuo)+' | Rendita fondo stimata €'+fmt(c.rendFondoNetto)+'/mese netti':'')+'\n'
     +'Obiettivo pensione: €'+fmt(S.obiettivo)+'/mese netti\n'
     +pdfNote+'\n\n'
-    +'CALCOLI: INPS netta €'+fmt(c.nettoInps)+'/mese | Stipendio netto stimato AL MOMENTO DEL PENSIONAMENTO ('+c.annoPens+') €'+fmt(c.stipNetto)+'/mese | Gap vs obiettivo €'+fmt(c.gapObj)+'/mese | Gap vs stip. €'+fmt(c.gapSal)+'/mese | Tasso sost. '+c.tasso+'% | Pensione: '+c.annoPens+' | Gap annuo €'+fmt(c.gapSal*12)+' | Gap 20 anni €'+fmt(c.gapSal*12*20)+'\n\n'
+    +'CALCOLI: INPS netta €'+fmt(c.nettoInps)+'/mese'+(c.rendFondoNetto>0?' | Rendita fondo complementare €'+fmt(c.rendFondoNetto)+'/mese | Pensione totale (INPS+fondo) €'+fmt(c.pensioneTotaleNetta)+'/mese':'')+'  | Stipendio netto stimato AL MOMENTO DEL PENSIONAMENTO ('+c.annoPens+') €'+fmt(c.stipNetto)+'/mese | Gap vs obiettivo €'+fmt(c.gapObj)+'/mese | Gap vs stip. €'+fmt(c.gapSal)+'/mese | Tasso sost. '+c.tasso+'% | Pensione: '+c.annoPens+' | Gap annuo €'+fmt(c.gapSal*12)+' | Gap 20 anni €'+fmt(c.gapSal*12*20)+'\n\n'
     +'REGOLA LINGUISTICA: ogni volta che scrivi la parola "stipendio" usa sempre "stipendio stimato al momento del pensionamento ('+c.annoPens+')" — mai solo "stipendio".\n\n'
     +'Scrivi una breve analisi in HTML (<strong>, <p>). Struttura in MASSIMO 180 parole totali:\n'
     +'1. '+apertura+' Una frase secca con i numeri chiave: pensione stimata, gap, tasso di sostituzione. Niente saluti.\n'
@@ -1280,7 +1407,10 @@ function buildConclusionPrompt(c){
   const urgenza=c.gapObj>500
     ?'ogni anno senza un piano costa €'+gapAnnuo+' in gap cumulato — è il momento di agire'
     :'il gap è ancora gestibile, ma va pianificato ora prima che diventi difficile da colmare';
-  const passo=isP
+  const hasFondo=S.fondo.includes('ce l');
+  const passo=hasFondo
+    ?'valutare se il fondo pensione attuale (montante €'+fmt(S.montante)+', versamento €'+fmt(S.versamentoAnnuo)+'/anno) stia davvero performando come potrebbe — e se esistano soluzioni più efficienti'
+    :isP
     ?'strutturare o ottimizzare il fondo pensione complementare, con il pieno beneficio fiscale IRPEF'
     :'aprire il fondo pensione e valutare il TFR — un\'operazione concreta, non solo teorica';
   return 'Sei '+av().name+', assistente AI previdenziale. Scrivi il commento conclusivo finale (max 110 parole, testo semplice, NO HTML) come se stessi parlando direttamente '+target+' dopo aver analizzato insieme i numeri.\n\n'
@@ -1289,7 +1419,9 @@ function buildConclusionPrompt(c){
     +'2. Il giudizio concreto: '+urgenza+'\n'
     +'3. Il passo consigliato: '+passo+'\n'
     +'4. Una frase finale che — senza dirlo esplicitamente — lasci all\'utente la sensazione che i suoi numeri meritino un ragionamento più preciso di quello che può fare da solo. Non fare esempi, non dire cosa fare, non citare strumenti. Solo la percezione che c\'è qualcosa di importante da approfondire. Poi una frase naturale su come è possibile farlo in una breve chiamata gratuita.\n\n'
-    +'NON citare mai fondi pensione, TFR, IRPEF o altre soluzioni specifiche nella conclusione. NON dire mai esplicitamente cosa fare. MAI R.I.T.A. Tono: come chi ha visto tanti casi simili e sa che ogni situazione ha la sua complessità.\n'
+    +(hasFondo
+    ?'L\'utente ha già un fondo pensione. Nella conclusione puoi fare un cenno al fatto che avere un fondo non basta — ciò che conta è che sia il fondo giusto, gestito bene. Invita con naturalezza a una breve chiamata gratuita per valutare insieme le performance e capire se ci siano margini di miglioramento. NON dire mai esplicitamente cosa fare o quale fondo scegliere. MAI R.I.T.A.'
+    :'NON citare mai fondi pensione, TFR, IRPEF o altre soluzioni specifiche nella conclusione. NON dire mai esplicitamente cosa fare. MAI R.I.T.A.')+'\nTono: come chi ha visto tanti casi simili e sa che ogni situazione ha la sua complessità.\n'
     +'REGOLA LINGUISTICA: ogni volta che scrivi la parola "stipendio" usa sempre la forma completa "stipendio stimato al momento del pensionamento" — mai solo "stipendio" o "ultimo stipendio" da soli.\nNON menzionare R.I.T.A. NON usare "Caro/Gentile cliente".';
 }
 async function callAI(msg,hist=[]){
