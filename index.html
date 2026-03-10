@@ -1410,13 +1410,17 @@ function buildConclusionPrompt(c){
 async function callAI(msg,hist=[]){
   const msgs=hist.length?[...hist,{role:'user',content:buildContent(msg)}]:[{role:'user',content:buildContent(msg)}];
   const systemPrompt='Sei un assistente AI esperto di previdenza italiana. Italiano, professionale e diretto. NON menzionare mai R.I.T.A. NON usare mai "Caro/Gentile cliente". In chat rispondi in testo semplice, no HTML.\n\nREGOLA FONDAMENTALE: cita e basa le tue risposte ESCLUSIVAMENTE su fonti ufficiali italiane: COVIP (covip.it), Agenzia delle Entrate (agenziaentrate.gov.it), Ministero dell\'Economia e delle Finanze (mef.gov.it), INPS (inps.it), Banca d\'Italia (bancaditalia.it), CONSOB (consob.it), IVASS (ivass.it), normativa ufficiale (Decreto Legislativo 252/2005 sulla previdenza complementare, TUIR, ecc.). Se non sei certo che un\'informazione sia supportata da queste fonti, dillo esplicitamente. Non citare mai fonti non ufficiali, blog, forum o siti di comparazione.\n\nREGOLA FONDAMENTALE SULLE RISPOSTE IN CHAT: non fornire mai piani operativi dettagliati, simulazioni personalizzate o raccomandazioni specifiche su cosa fare (quale fondo aprire, quanto versare, se conviene il TFR). Per domande generali e normative rispondi con le informazioni di fonte ufficiale. Per qualsiasi domanda che riguardi la situazione specifica dell\'utente, rispondi con una breve informazione generale e poi lascia intendere — senza essere esplicito — che la risposta precisa dipende da variabili che meritano un confronto diretto. Una chiamata gratuita di ~15 minuti è disponibile su questo sito.';
-  const payload={model:'claude-sonnet-4-20250514',max_tokens:3000,system:systemPrompt,messages:msgs};
+  const payload={model:'claude-sonnet-4-20250514',max_tokens:1200,system:systemPrompt,messages:msgs};
   // Auto-detect: se siamo su Netlify usa il proxy, altrimenti chiama direttamente
   const isNetlify=window.location.hostname.includes('netlify.app')||window.location.hostname.includes('intelligenzaprevidenziale.com');
   const apiUrl=isNetlify?'/.netlify/functions/claude':'https://api.anthropic.com/v1/messages';
   const headers={'Content-Type':'application/json'};
-  const r=await fetch(apiUrl,{method:'POST',headers,body:JSON.stringify(payload)});
-  if(!r.ok)throw new Error(r.status);
+  const controller=new AbortController();
+  const tid=setTimeout(()=>controller.abort(),25000);
+  let r;
+  try{r=await fetch(apiUrl,{method:'POST',headers,body:JSON.stringify(payload),signal:controller.signal});}
+  finally{clearTimeout(tid);}
+  if(!r.ok){const errTxt=await r.text().catch(()=>'');throw new Error(r.status+' '+errTxt);}
   return(await r.json()).content[0].text;
 }
 function buildContent(txt){
