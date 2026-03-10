@@ -1039,8 +1039,9 @@ TESTO: "${S.profilo}"`}]})
 }
 
 function applyParsed(p){
-  if(p.nome)document.getElementById('nome').value=p.nome;
-  if(p.cognome)document.getElementById('cognome').value=p.cognome;
+  // Salva nome/cognome in S per uso futuro (email prenotazione)
+  if(p.nome)S.nome=p.nome;
+  if(p.cognome)S.cognome=p.cognome;
   // Età → data di nascita
   if(p.eta&&p.eta>18&&p.eta<68){
     const y=new Date().getFullYear()-p.eta;
@@ -1203,9 +1204,10 @@ function validate(){
   return ok;
 }
 function collect(){
-  S.nome=document.getElementById('nome').value.trim();
-  S.cognome=document.getElementById('cognome').value.trim();
-  S.email=document.getElementById('email').value.trim();
+  // nome/cognome vengono da parsePrompt o dalla forma prenotazione
+  S.nome=S.nome||'';
+  S.cognome=S.cognome||'';
+  S.email=S.email||'';
   const dn=document.getElementById('dataNascita').value;if(dn){S.dataNascita=new Date(dn);onDateChange();}
   const isFascia=document.getElementById('ralFascia').style.display!=='none';
   S.ral=isFascia?parseInt(document.getElementById('ralSelect').value)||47500:parseInt(document.getElementById('ralInput').value)||47500;
