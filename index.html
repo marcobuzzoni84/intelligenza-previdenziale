@@ -165,7 +165,7 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.4) sepia(1) s
 .gap-card-sub{font-size:11px;color:var(--muted2);line-height:1.5;}
 .salary-estimate{background:var(--surface);border:1px solid var(--border);border-left:2px solid var(--gold);border-radius:0 3px 3px 0;padding:11px 15px;margin-bottom:18px;font-size:12px;color:var(--muted2);line-height:1.7;}
 .salary-estimate strong{color:var(--gold3);}
-.result-kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:18px;}
+.result-kpis{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:18px;}
 @media(max-width:540px){.result-kpis{grid-template-columns:1fr;}}
 .kpi-card{background:var(--surface);border:1px solid var(--border);border-radius:4px;padding:18px;}
 .kpi-label{font-size:12px;letter-spacing:.08em;color:var(--muted);text-transform:uppercase;margin-bottom:7px;}
@@ -1317,6 +1317,7 @@ async function doAnalysis(){
   (function(){
     const gapPct = c.gapSal > 0 ? (c.gapSal / c.stipNetto) * 100 : 0;
     const badge = document.getElementById('scoreBadge');
+    if(!badge) return;
     let cls, icon, label, sub;
     if (gapPct <= 5) {
       cls='ok';    icon='✔';
@@ -1351,6 +1352,8 @@ async function doAnalysis(){
     ]);
     clearInterval(iv);
     document.getElementById('narrativeBox').innerHTML=prompts[0];
+    S.narrativaCompleta=prompts[0].replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim(); // plain text for email
+    S.conclusioneAvatar=prompts[1];
     S.history=[{role:'user',content:buildPrompt(c)},{role:'assistant',content:prompts[0]}];
     // Avatar conclusione
     const avConc=document.getElementById('avConclusion');
@@ -1530,6 +1533,24 @@ async function submitContact(){
       +(S.pdfB64?'PDF INPS caricato: Sì':'PDF INPS caricato: No');
   }
 
+  // Chat AI previdenza (S.history)
+  let chatLog='Nessuna domanda tecnica posta.';
+  if(S.history&&S.history.length>0){
+    chatLog=S.history.filter(m=>m.role!=='system').map(m=>{
+      const chi=m.role==='user'?'👤 Cliente':'🤖 AI';
+      return chi+': '+m.content;
+    }).join('\n\n');
+  }
+
+  // Chat bio Marco Buzzoni (bioHistory)
+  let bioLog='Nessuna domanda su Marco Buzzoni.';
+  if(typeof bioHistory!=='undefined'&&bioHistory.length>0){
+    bioLog=bioHistory.map(m=>{
+      const chi=m.role==='user'?'👤 Cliente':'🤖 Marco AI';
+      return chi+': '+m.content;
+    }).join('\n\n');
+  }
+
   // Corpo email leggibile
   const corpoEmail=
     '=== RICHIESTA CONSULENZA PREVIDENZIALE ===\n\n'
@@ -1540,7 +1561,15 @@ async function submitContact(){
     +'Codice fiscale: '+cf+'\n'
     +'Orari preferiti: '+orari+'\n'
     +'Note: '+(note||'nessuna')+'\n\n'
-    +datiSim;
+    +datiSim+'\n\n'
+    +'=== ANALISI AI COMPLETA ===\n'
+    +(S.narrativaCompleta||'Analisi non disponibile.')+'\n\n'
+    +'=== CONCLUSIONE AVATAR AI ===\n'
+    +(S.conclusioneAvatar||'Non disponibile.')+'\n\n'
+    +'=== DOMANDE TECNICHE POSTE ALL\'AI ===\n'
+    +chatLog+'\n\n'
+    +'=== DOMANDE SU MARCO BUZZONI ===\n'
+    +bioLog;
 
   // Tentativo 1: Netlify Forms
   try{
