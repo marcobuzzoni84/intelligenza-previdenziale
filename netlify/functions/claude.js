@@ -1,6 +1,5 @@
-const https = require('https');
-
 exports.handler = async function(event, context) {
+  // CORS preflight
   if (event.httpMethod === 'OPTIONS') {
     return {
       statusCode: 200,
@@ -18,53 +17,60 @@ exports.handler = async function(event, context) {
   }
 
   const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
-
   if (!ANTHROPIC_API_KEY) {
     return {
       statusCode: 500,
-      headers: { 'Access-Control-Allow-Origin': '*' },
-      body: JSON.stringify({ error: 'API key non configurata sul server' })
+      headers: { 'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json' },
+      body: JSON.stringify({ error: 'API key non configurata' })
     };
   }
 
-  return new Promise((resolve) => {
-    const bodyData = event.body;
-    const options = {
-      hostname: 'api.anthropic.com',
-      path: '/v1/messages',
+  try {
+    const body = JSON.parse(event.body);
+
+    // Strip pdfB64 from messages if too large (Netlify body limit 6MB)
+    if (body.messages) {
+      body.messages = body.messages.map(m => {
+        if (Array.isArray(m.content)) {
+          return {
+            ...m,
+            content: m.content.map(c => {
+              if (c.type === 'document' && c.source && c.source.data && c.source.data.length > 500000) {
+                return { type: 'text', text: '[PDF rimosso per dimensione]' };
+              }
+              return c;
+            })
+          };
+        }
+        return m;
+      });
+    }
+
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'x-api-key': ANTHROPIC_API_KEY,
-        'anthropic-version': '2023-06-01',
-        'Content-Length': Buffer.byteLength(bodyData)
-      }
+        'anthropic-version': '2023-06-01'
+      },
+      body: JSON.stringify(body)
+    });
+
+    const data = await response.json();
+
+    return {
+      statusCode: response.status,
+      headers: {
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*'
+      },
+      body: JSON.stringify(data)
     };
-
-    const req = https.request(options, (res) => {
-      let data = '';
-      res.on('data', (chunk) => { data += chunk; });
-      res.on('end', () => {
-        resolve({
-          statusCode: res.statusCode,
-          headers: {
-            'Content-Type': 'application/json',
-            'Access-Control-Allow-Origin': '*'
-          },
-          body: data
-        });
-      });
-    });
-
-    req.on('error', (err) => {
-      resolve({
-        statusCode: 500,
-        headers: { 'Access-Control-Allow-Origin': '*' },
-        body: JSON.stringify({ error: err.message })
-      });
-    });
-
-    req.write(bodyData);
-    req.end();
-  });
+  } catch (err) {
+    return {
+      statusCode: 500,
+      headers: { 'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json' },
+      body: JSON.stringify({ error: err.message })
+    };
+  }
 };
