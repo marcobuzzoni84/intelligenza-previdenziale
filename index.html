@@ -330,6 +330,10 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.4) sepia(1) s
   <textarea name="note"></textarea>
   <textarea name="dati_simulatore"></textarea>
   <textarea name="profilo_inserito"></textarea>
+  <textarea name="analisi_ai_completa"></textarea>
+  <textarea name="conclusione_avatar"></textarea>
+  <textarea name="chat_tecnica"></textarea>
+  <textarea name="chat_buzzoni"></textarea>
 </form>
 <nav>
   <div class="nav-logo"><span>Intelligenza</span>Previdenziale</div>
@@ -962,7 +966,7 @@ async function sendBio() {
       headers: {'Content-Type': 'application/json'},
       body: JSON.stringify({
         model: 'claude-sonnet-4-20250514',
-        max_tokens: 400,
+        max_tokens: 180,
         system: MARCO_BIO,
         messages: msgs
       })
@@ -1402,11 +1406,11 @@ function buildConclusionPrompt(c){
   const fondoNota=hasFondo
     ?'\nL\'utente ha già un fondo pensione. Puoi accennare che avere un fondo non basta — conta che sia quello giusto e ben gestito. Invita naturalmente a valutarlo insieme in una breve chiamata gratuita.'
     :'\nNON citare strumenti, soluzioni o prodotti specifici.';
-  return 'Sei '+av().name+', assistente AI previdenziale. Scrivi il commento conclusivo (MAX 75 parole, testo semplice, NO HTML, NO elenchi puntati) parlando direttamente '+target+'.\n\n'
-    +'STRUTTURA in 3 frasi:\n'
-    +'1. Inizia con una frase che integra naturalmente questi 3 dati (nessun altro numero): '+d1+', '+d2+', '+d3+'. Scrivi come se stessi parlando a una persona, non come un report.\n'
-    +'2. Giudizio sulla situazione, tono '+urgenzaTono+'. Una frase.\n'
-    +'3. Lascia intendere — senza dirlo — che c\'è qualcosa di importante da approfondire con qualcuno di esperto. Chiudi con un cenno naturale alla chiamata gratuita.\n'
+  return 'Sei '+av().name+', assistente AI previdenziale. Scrivi il commento conclusivo (MAX 55 parole, testo semplice, NO HTML, NO elenchi puntati) parlando direttamente '+target+'.\n\n'
+    +'STRUTTURA: esattamente 3 frasi brevi, un tema per frase:\n'
+    +'1. I numeri: '+d1+', '+d2+', '+d3+' — una frase sola, diretta.\n'
+    +'2. Cosa significa: una frase sul rischio concreto, tono '+urgenzaTono+'.\n'
+    +'3. Cosa fare: una frase che porta naturalmente alla chiamata gratuita — senza dire esplicitamente cosa fare.\n'
     +fondoNota+'\n'
     +'NON usare "Caro/Gentile". NON menzionare R.I.T.A. NON ripetere tutti i numeri dell\'analisi.';
 }
@@ -1570,6 +1574,10 @@ async function submitContact(){
     formData.append('note',note||'');
     formData.append('dati_simulatore',datiSim);
     formData.append('profilo_inserito',profiloLibero);
+    formData.append('analisi_ai_completa',S.narrativaCompleta||'Non disponibile');
+    formData.append('conclusione_avatar',S.conclusioneAvatar||'Non disponibile');
+    formData.append('chat_tecnica',chatLog);
+    formData.append('chat_buzzoni',bioLog);
     const r=await fetch('/',{method:'POST',body:formData});
     if(r.ok){showSuccess();return;}
   }catch(_){}
