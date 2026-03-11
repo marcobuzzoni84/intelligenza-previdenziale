@@ -1327,22 +1327,28 @@ async function doAnalysis(){
     document.getElementById('scoreSub').textContent = sub;
     badge.style.display = 'flex';
   })();
+  // Chiamata 1: narrativa
+  let narrativa='';
   try{
-    // Chiamata AI per narrativa + conclusione avatar separata
-    const prompts=await Promise.all([
-      callAI(buildPrompt(c)),
-      callAI(buildConclusionPrompt(c))
-    ]);
-    clearInterval(iv);
-    document.getElementById('narrativeBox').innerHTML=prompts[0].replace(/^```html\s*/i,'').replace(/```\s*$/,'').trim();
-    S.narrativaCompleta=prompts[0].replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim(); // plain text for email
-    S.conclusioneAvatar=prompts[1];
-    S.history=[{role:'user',content:buildPrompt(c)},{role:'assistant',content:prompts[0]}];
-    // Avatar conclusione
+    narrativa=await callAI(buildPrompt(c));
+    narrativa=narrativa.replace(/^```html\s*/i,'').replace(/```\s*$/,'').trim();
+  }catch(e1){
+    console.error('Narrativa AI fallita:',e1);
+    narrativa=`<p><strong>Pensione INPS stimata: €\u00a0${fmt(c.nettoInps)}/mese</strong></p><p>Gap mensile vs obiettivo: <strong style="color:var(--red)">€\u00a0${fmt(c.gapObj)}</strong> — la pensione copre il <strong>${c.tasso}%</strong> dello stipendio stimato al pensionamento (${c.annoPens}).</p>`;
+  }
+  document.getElementById('narrativeBox').innerHTML=narrativa;
+  S.narrativaCompleta=narrativa.replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim();
+  S.history=[{role:'user',content:buildPrompt(c)},{role:'assistant',content:narrativa}];
+  clearInterval(iv);
+  hide('aiLoader');show('resultBox');
+  // Chiamata 2: conclusione avatar (non blocca la pagina)
+  try{
+    const concl=await callAI(buildConclusionPrompt(c));
+    S.conclusioneAvatar=concl;
     const avConc=document.getElementById('avConclusion');
     const avConcLabel=document.getElementById('avConclusionLabel');
     const avConcName=document.getElementById('avConcNameLabel');
-    document.getElementById('avBubble4').innerHTML=prompts[1];
+    document.getElementById('avBubble4').innerHTML=concl;
     ['avEmoji4','avName4'].forEach((id,i)=>{
       const el=document.getElementById(id);
       if(el)el.textContent=i===0?av().emoji:av().name;
@@ -1350,13 +1356,10 @@ async function doAnalysis(){
     if(avConcName)avConcName.textContent=av().name;
     avConc.style.display='flex';
     if(avConcLabel)avConcLabel.style.display='';
-    hide('aiLoader');show('resultBox');
-    addMsg('ai','💬 Hai domande sulla tua situazione previdenziale? Posso approfondire fondo pensione, TFR, deduzioni IRPEF o pensionamento anticipato.\n\nLe mie risposte si basano esclusivamente su fonti ufficiali: COVIP, Agenzia delle Entrate, INPS, Banca d\'Italia, CONSOB, IVASS e normativa vigente (D.Lgs. 252/2005).');
-  }catch(e){
-    clearInterval(iv);
-    document.getElementById('narrativeBox').innerHTML=`<strong>Analisi completata.</strong><br><br>Pensione INPS netta: <strong>€\u00a0${fmt(c.nettoInps)}/mese</strong><br>Gap vs obiettivo: <strong style="color:var(--red)">€\u00a0${fmt(c.gapObj)}/mese</strong><br>Gap vs stipendio: <strong style="color:var(--red)">€\u00a0${fmt(c.gapSal)}/mese</strong><br>La pensione coprerà il <strong>${c.tasso}%</strong> dello stipendio`;
-    hide('aiLoader');show('resultBox');
+  }catch(e2){
+    console.error('Conclusione avatar fallita:',e2);
   }
+  addMsg('ai','💬 Hai domande sulla tua situazione previdenziale? Posso approfondire fondo pensione, TFR, deduzioni IRPEF o pensionamento anticipato.\n\nLe mie risposte si basano esclusivamente su fonti ufficiali: COVIP, Agenzia delle Entrate, INPS, Banca d\'Italia, CONSOB, IVASS e normativa vigente (D.Lgs. 252/2005).');
 }
 
 function buildPrompt(c){
@@ -1416,7 +1419,7 @@ async function callAI(msg,hist=[]){
   const apiUrl=isNetlify?'/.netlify/functions/claude':'https://api.anthropic.com/v1/messages';
   const headers={'Content-Type':'application/json'};
   const controller=new AbortController();
-  const tid=setTimeout(()=>controller.abort(),25000);
+  const tid=setTimeout(()=>controller.abort(),55000);
   let r;
   try{r=await fetch(apiUrl,{method:'POST',headers,body:JSON.stringify(payload),signal:controller.signal});}
   finally{clearTimeout(tid);}
