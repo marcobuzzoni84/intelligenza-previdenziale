@@ -966,7 +966,7 @@ async function sendBio() {
       headers: {'Content-Type': 'application/json'},
       body: JSON.stringify({
         model: 'claude-sonnet-4-20250514',
-        max_tokens: 180,
+        max_tokens: 350,
         system: MARCO_BIO,
         messages: msgs
       })
@@ -1553,8 +1553,7 @@ async function submitContact(){
     +'Orari preferiti: '+orari+'\n'
     +'Note: '+(note||'nessuna')+'\n\n'
     +datiSim+'\n\n'
-    +'=== ANALISI AI COMPLETA ===\n'
-    +(S.narrativaCompleta||'Analisi non disponibile.')+'\n\n'
+
     +'=== CONCLUSIONE AVATAR AI ===\n'
     +(S.conclusioneAvatar||'Non disponibile.')+'\n\n'
     +'=== DOMANDE TECNICHE POSTE ALL\'AI ===\n'
@@ -1574,7 +1573,6 @@ async function submitContact(){
     formData.append('note',note||'');
     formData.append('dati_simulatore',datiSim);
     formData.append('profilo_inserito',profiloLibero);
-    formData.append('analisi_ai_completa',S.narrativaCompleta||'Non disponibile');
     formData.append('conclusione_avatar',S.conclusioneAvatar||'Non disponibile');
     formData.append('chat_tecnica',chatLog);
     formData.append('chat_buzzoni',bioLog);
