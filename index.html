@@ -1329,6 +1329,7 @@ async function doAnalysis(){
   let si=0;const iv=setInterval(()=>{document.getElementById('aiStatus').textContent=stati[si++%stati.length];},780);
 
   // Popola KPI
+  try{
   const goEl=document.getElementById('gapObj');
   goEl.textContent=fmtGap(c.gapObj);goEl.className='gap-card-amount '+(c.gapObj>0?'neg':'pos');
   document.getElementById('gapObjSub').textContent=c.gapObj>0?`al mese per raggiungere l'obiettivo di €\u00a0${fmt(S.obiettivo)}`:`surplus mensile vs. obiettivo €\u00a0${fmt(S.obiettivo)}`;
@@ -1380,6 +1381,7 @@ async function doAnalysis(){
     document.getElementById('scoreSub').textContent = sub;
     badge.style.display = 'flex';
   })();
+  }catch(eKpi){console.warn('KPI error',eKpi);}
   try{
     // Chiamata AI per narrativa + conclusione avatar separata
     const prompts=await Promise.all([
@@ -1406,8 +1408,13 @@ async function doAnalysis(){
     hide('aiLoader');show('resultBox');
     addMsg('ai','💬 Hai domande sulla tua situazione previdenziale? Posso approfondire fondo pensione, TFR, deduzioni IRPEF o pensionamento anticipato.\n\nLe mie risposte si basano esclusivamente su fonti ufficiali: COVIP, Agenzia delle Entrate, INPS, Banca d\'Italia, CONSOB, IVASS e normativa vigente (D.Lgs. 252/2005).');
   }catch(e){
+    console.error('doAnalysis catch:',e);
     clearInterval(iv);
-    document.getElementById('narrativeBox').innerHTML=`<strong>Analisi completata.</strong><br><br>Pensione INPS netta: <strong>€\u00a0${fmt(c.nettoInps)}/mese</strong><br>Gap vs obiettivo: <strong style="color:var(--red)">€\u00a0${fmt(c.gapObj)}/mese</strong><br>Gap vs stipendio: <strong style="color:var(--red)">€\u00a0${fmt(c.gapSal)}/mese</strong><br>La pensione coprerà il <strong>${c.tasso}%</strong> dello stipendio`;
+    try{
+      document.getElementById('narrativeBox').innerHTML=`<strong>Analisi completata.</strong><br><br>Pensione INPS netta: <strong>€\u00a0${fmt(c.nettoInps)}/mese</strong><br>Gap vs obiettivo: <strong style="color:var(--red)">€\u00a0${fmt(c.gapObj)}/mese</strong><br>Gap vs stipendio: <strong style="color:var(--red)">€\u00a0${fmt(c.gapSal)}/mese</strong>`;
+    }catch(e2){
+      document.getElementById('narrativeBox').innerHTML='<strong>Analisi completata.</strong><br>Controlla la connessione e riprova.';
+    }
     hide('aiLoader');show('resultBox');
   }
 }
