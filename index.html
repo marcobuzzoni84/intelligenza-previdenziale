@@ -333,6 +333,7 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.4) sepia(1) s
 .tipo-card.selected .tipo-label{color:var(--gold);}
 /* ── MOBILE ── */
 @media(max-width:600px){
+  .step-content[style*="display:none"]{display:none!important;}
   .nav-cta{display:none!important;}
   .hero-h1{font-size:clamp(32px,8vw,48px)!important;}
   .btn-primary{width:100%;justify-content:center;}
@@ -445,7 +446,7 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.4) sepia(1) s
       <button class="chip" onclick="setChip(this,'Ciao, sono un dipendente privato, ho un reddito di circa 45.000€ lordi, ho 42 anni e lavoro da 15 anni. Non ho ancora aperto un fondo pensione.')">👔 Dipendente privato</button>
       <button class="chip" onclick="setChip(this,'Ciao, sono un libero professionista con partita IVA, ho 38 anni e fattura circa 60.000€ lordi. Ho aperto un fondo pensione 3 anni fa.')">💼 Libero professionista</button>
       <button class="chip" onclick="setChip(this,'Ciao, sono un imprenditore, ho 50 anni e un reddito di circa 80.000€. Verso regolarmente i contributi INPS ma non ho mai aperto un fondo pensione.')">🏢 Imprenditore</button>
-      <button class="chip" onclick="setChip(this,'Ciao, sono un dipendente pubblico, ho 45 anni e 20 anni di contributi versati. Stipendio di circa 32.000€ lordi.</button>
+      <button class="chip" onclick="setChip(this,'Ciao, sono un dipendente pubblico, ho 45 anni e 20 anni di contributi versati. Stipendio di circa 32.000€ lordi.')">🎓 Dipendente pubblico</button>
     </div>
     <textarea class="prompt-area" id="promptText" placeholder="Es: Ho 45 anni, lavoro come ingegnere dipendente da 18 anni, RAL circa 55.000€. Non ho ancora aperto un fondo pensione..."></textarea>
     <div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap;">
@@ -520,7 +521,7 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.4) sepia(1) s
       <div class="field-wrap">
         <div class="field-label">Obiettivo pensione netta/mese</div>
         <div class="euro-input"><span class="euro-sign">€</span>
-          <input class="field-input" type="number" id="obiettivo" placeholder="Es: 2.500" min="500" max="15000">
+          <input class="field-input" type="number" id="obiettivo" value="2500" min="500" max="15000">
         <div class="field-error" id="errObiettivo">Inserisci il tuo obiettivo di pensione mensile</div>
         </div>
       </div>
@@ -1183,6 +1184,7 @@ function aggiornaRalDipendente(){
     if(vers&&!vers.value)vers.value=tfr;
   }
 }
+function showFondo(v){document.getElementById('fondoBox').style.display=v?'':'none';}
 function showTfrNote(v){
   const box=document.getElementById('tfrAutoBox');
   const fb=document.getElementById('fondoBox');
@@ -1236,14 +1238,7 @@ function validate(){
   if(!document.getElementById('dataNascita').value){
     document.getElementById('errData').style.display='block';document.getElementById('dataNascita').classList.add('error');ok=false;
   }else{document.getElementById('errData').style.display='none';document.getElementById('dataNascita').classList.remove('error');}
-  const objVal=document.getElementById('obiettivo').value;
-  if(!objVal||parseInt(objVal)<100){
-    const errObj=document.getElementById('errObiettivo');if(errObj)errObj.style.display='block';
-    document.getElementById('obiettivo').classList.add('error');ok=false;
-  }else{
-    const errObj=document.getElementById('errObiettivo');if(errObj)errObj.style.display='none';
-    document.getElementById('obiettivo').classList.remove('error');
-  }
+
   const selFondo=document.querySelector('#grpFondo .selected');
   const hasFondo=selFondo&&(selFondo.textContent.includes('TFR')||selFondo.textContent.includes('volontario'));
   if(hasFondo){
