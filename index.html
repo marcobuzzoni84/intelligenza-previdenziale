@@ -22,17 +22,17 @@ body{font-family:'DM Sans',sans-serif;background:var(--ink);color:var(--white);m
 nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:18px 48px;background:rgba(10,13,20,.92);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);}
 .nav-logo{font-family:'Cormorant Garamond',serif;font-size:21px;font-weight:600;color:var(--gold);}.nav-logo span{color:var(--white);}
 .nav-cta{font-size:21px;font-weight:500;color:var(--gold);text-decoration:none;border:1px solid var(--border);padding:7px 18px;border-radius:2px;transition:all .25s;cursor:pointer;background:none;font-family:'DM Sans',sans-serif;}.nav-cta:hover{background:var(--gold);color:var(--ink);}
-#hero{min-height:100vh;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;padding:120px 24px 80px;}
-.hero-bg{position:absolute;inset:0;background:radial-gradient(ellipse 80% 60% at 50% 20%,rgba(201,168,76,.07) 0%,transparent 60%),var(--ink);}
-.hero-grid{position:absolute;inset:0;opacity:.04;background-image:linear-gradient(var(--gold) 1px,transparent 1px),linear-gradient(90deg,var(--gold) 1px,transparent 1px);background-size:60px 60px;mask-image:radial-gradient(ellipse 70% 70% at 50% 30%,black 0%,transparent 80%);}
-.hero-inner{position:relative;z-index:2;max-width:860px;margin:0 auto;text-align:center;}
+#hero{min-height:100vh;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;padding:120px 24px 80px;-webkit-overflow-scrolling:touch;}
+.hero-bg{position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse 80% 60% at 50% 20%,rgba(201,168,76,.07) 0%,transparent 60%),var(--ink);}
+.hero-grid{position:absolute;inset:0;opacity:.04;pointer-events:none;background-image:linear-gradient(var(--gold) 1px,transparent 1px),linear-gradient(90deg,var(--gold) 1px,transparent 1px);background-size:60px 60px;mask-image:radial-gradient(ellipse 70% 70% at 50% 30%,black 0%,transparent 80%);}
+.hero-inner{position:relative;z-index:10;max-width:860px;margin:0 auto;text-align:center;}
 .hero-badge{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--border);border-radius:100px;padding:6px 16px;margin-bottom:40px;font-size:13px;font-weight:500;letter-spacing:.1em;color:var(--gold);text-transform:uppercase;}
 .hero-badge::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--gold);animation:pulse 2s infinite;}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
 .hero-h1{font-family:'Cormorant Garamond',serif;font-size:clamp(52px,8vw,96px);font-weight:300;line-height:1.05;letter-spacing:-.02em;margin-bottom:28px;}
 .hero-h1 em{font-style:normal;color:var(--gold);}
 .hero-sub{font-size:clamp(17px,2.2vw,19px);color:var(--muted2);line-height:1.6;max-width:520px;margin:0 auto 32px;font-weight:300;}
-.hero-cta{display:inline-flex;align-items:center;gap:12px;background:var(--gold);color:var(--ink);font-size:21px;font-weight:600;letter-spacing:.04em;padding:18px 42px;border-radius:2px;border:none;cursor:pointer;transition:all .3s;text-transform:uppercase;}
+.hero-cta{display:inline-flex;align-items:center;gap:12px;background:var(--gold);color:var(--ink);font-size:21px;font-weight:600;letter-spacing:.04em;padding:18px 42px;border-radius:2px;border:none;cursor:pointer;transition:all .3s;text-transform:uppercase;position:relative;z-index:5;touch-action:manipulation;-webkit-tap-highlight-color:transparent;}
 .hero-cta:hover{background:var(--gold2);transform:translateY(-2px);}
 .hero-proof{margin-top:60px;display:flex;align-items:center;justify-content:center;gap:40px;flex-wrap:wrap;}
 .proof-item{display:flex;flex-direction:column;align-items:center;gap:4px;}
@@ -1619,3 +1619,6 @@ function showSuccess(){
   document.getElementById('cSubmitBtn').disabled=false;
   document.getElementById('cSubmitBtn').innerHTML='Invia la richiesta <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7h10M7.5 3l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>';
 }
+</script>
+</body>
+</html>
