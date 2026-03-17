@@ -1312,7 +1312,19 @@ function fmt(n){return Math.round(n).toLocaleString('it-IT');}
 function fmtGap(g){return g>0?`- €\u00a0${fmt(g)}/mese`:`+ €\u00a0${fmt(Math.abs(g))}/mese`;}
 
 // ── ANALYSIS ─────────────────────────────────────────
-async function runAnalysis(){if(!validate())return;collect();await doAnalysis();}
+async function runAnalysis(){
+  console.log('runAnalysis started');
+  if(!validate()){console.log('validate failed');return;}
+  console.log('validate ok');
+  collect();
+  console.log('collect done, S.eta=',S.eta,'S.ral=',S.ral);
+  try{await doAnalysis();}
+  catch(e){
+    console.error('runAnalysis error:',e);
+    hide('aiLoader');show('resultBox');
+    document.getElementById('narrativeBox').innerHTML='<p><strong>Errore tecnico.</strong> Controlla la connessione e riprova.</p>';
+  }
+}
 async function doAnalysis(){
   hide('step1');hide('step2');show('step3');setDot(3);scrollTop();
   show('aiLoader');hide('resultBox');applyAvatar();
