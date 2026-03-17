@@ -106,6 +106,13 @@ select.field-input option{background:var(--ink2);}
 .unlock-btn:hover{background:rgba(201,168,76,.18);}
 /* RADIO */
 .field-radio-group{display:flex;gap:7px;flex-wrap:wrap;}
+.tipo-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:2px;}
+.tipo-card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:16px 12px;cursor:pointer;transition:all .25s;text-align:center;display:flex;flex-direction:column;align-items:center;gap:8px;font-family:'DM Sans',sans-serif;touch-action:manipulation;}
+.tipo-card:hover{border-color:rgba(201,168,76,.4);background:rgba(201,168,76,.04);}
+.tipo-card.selected{border-color:var(--gold);background:rgba(201,168,76,.09);}
+.tipo-icon{font-size:28px;line-height:1;}
+.tipo-label{font-size:14px;font-weight:600;color:var(--muted2);line-height:1.3;letter-spacing:.01em;}
+.tipo-card.selected .tipo-label{color:var(--gold);}
 .radio-btn{flex:1;min-width:0;padding:8px 6px;border-radius:3px;border:1px solid var(--border);font-size:14px;color:var(--muted2);cursor:pointer;text-align:center;word-break:break-word;line-height:1.3;transition:all .2s;background:transparent;text-align:center;font-family:'DM Sans',sans-serif;}
 .radio-btn.selected{border-color:var(--gold);color:var(--gold);background:rgba(201,168,76,.07);}
 .radio-btn.locked{pointer-events:none;}
@@ -499,11 +506,23 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.4) sepia(1) s
       </div>
       <div class="field-wrap full">
         <div class="field-label">Tipo di lavoro</div>
-        <div class="field-radio-group" id="grpTipo">
-          <button class="radio-btn selected" onclick="radioClick('grpTipo',this);aggiornaTipo()">Dipendente privato</button>
-          <button class="radio-btn" onclick="radioClick('grpTipo',this);aggiornaTipo()">Dipendente pubblico</button>
-          <button class="radio-btn" onclick="radioClick('grpTipo',this);aggiornaTipo()">Autonomo / P.IVA</button>
-          <button class="radio-btn" onclick="radioClick('grpTipo',this);aggiornaTipo()">Imprenditore</button>
+        <div class="tipo-grid" id="grpTipo">
+          <button class="tipo-card selected" onclick="radioClick('grpTipo',this);aggiornaTipo()">
+            <span class="tipo-icon">💼</span>
+            <span class="tipo-label">Dipendente privato</span>
+          </button>
+          <button class="tipo-card" onclick="radioClick('grpTipo',this);aggiornaTipo()">
+            <span class="tipo-icon">🏛</span>
+            <span class="tipo-label">Dipendente pubblico</span>
+          </button>
+          <button class="tipo-card" onclick="radioClick('grpTipo',this);aggiornaTipo()">
+            <span class="tipo-icon">⚡</span>
+            <span class="tipo-label">Autonomo / P.IVA</span>
+          </button>
+          <button class="tipo-card" onclick="radioClick('grpTipo',this);aggiornaTipo()">
+            <span class="tipo-icon">🏢</span>
+            <span class="tipo-label">Imprenditore</span>
+          </button>
         </div>
         </div>
       <!-- RAL -->
@@ -808,10 +827,7 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.4) sepia(1) s
     </div>
     <div class="pdf-step"><div class="pdf-step-num">1</div><div class="pdf-step-content"><h4>Vai su MyINPS</h4><p>Accedi a <code>myinps.inps.it</code> con SPID, CIE o CNS.</p></div></div>
     <div class="pdf-step"><div class="pdf-step-num">2</div><div class="pdf-step-content"><h4>Cerca "La mia pensione futura"</h4><p>Nel menu cerca <code>La mia pensione futura</code> oppure: <strong>Pensione e previdenza → Simulazione pensione</strong>.</p></div></div>
-    <div class="pdf-step"><div class="pdf-step-num">3</div><div class="pdf-step-content"><h4>Scarica il documento</h4><p>Clicca <strong>"Scarica il documento"</strong> — di solito si chiama <code>estratto_conto_previdenziale.pdf</code>.</p></div></div>
-    <div class="pdf-step"><div class="pdf-step-num">4</div><div class="pdf-step-content"><h4>Caricalo qui</h4><p>Torna indietro e carica il file. L'AI userà i tuoi dati reali per una stima molto più precisa.</p></div></div>
-    <button class="btn-primary" onclick="hidePdfGuide()">Ho capito, torno all'analisi <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7h10M7.5 3l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></button>
-  </div>
+    <div class="pdf-step"><div cla
 <script>
 const S={avatar:'M',profilo:'',nome:'',cognome:'',email:'',dataNascita:null,eta:0,tipo:'Dipendente privato',ral:47500,contributi:15,fondo:'Non ancora',montante:0,versamentoAnnuo:0,obiettivo:2500,pdfB64:null,pdfName:'',history:[],parsed:null,fieldsLocked:false};
 const AV={M:{emoji:'👨‍💼',name:'Luca'},F:{emoji:'👩‍💼',name:'Sofia'}};
@@ -1063,8 +1079,9 @@ function applyParsed(p){
   }
   // Tipo lavoro
   if(p.tipo){
-    document.querySelectorAll('#grpTipo .radio-btn').forEach(b=>{
-      b.classList.toggle('selected',b.textContent.trim()===p.tipo);
+    document.querySelectorAll('#grpTipo .tipo-card').forEach(b=>{
+      const lbl=b.querySelector('.tipo-label');
+      b.classList.toggle('selected',lbl?lbl.textContent.trim()===p.tipo:b.textContent.trim()===p.tipo);
     });
     aggiornaTipo();
   }
@@ -1172,7 +1189,8 @@ function aggiornaRalDipendente(){
 }
 function aggiornaTipo(){
   const sel=document.querySelector('#grpTipo .selected');
-  const tipo=sel?sel.textContent.trim():'';
+  const labelEl=sel?sel.querySelector('.tipo-label'):null;
+  const tipo=labelEl?labelEl.textContent.trim():(sel?sel.textContent.trim():'');
   const btnFondoTfr=document.getElementById('btnFondoTfr');
   if(btnFondoTfr){
     const showTfr=(tipo==='Dipendente privato');
@@ -1240,7 +1258,7 @@ function collect(){
   S.obiettivo=parseInt(document.getElementById('obiettivo').value)||0;
   S.montante=parseInt(document.getElementById('montante').value)||0;
   S.versamentoAnnuo=parseInt(document.getElementById('versamentoAnnuo').value)||0;
-  const t=document.querySelector('#grpTipo .selected');if(t)S.tipo=t.textContent.trim();
+  const t=document.querySelector('#grpTipo .selected');if(t){const tl=t.querySelector('.tipo-label');S.tipo=tl?tl.textContent.trim():t.textContent.trim();}
   const f=document.querySelector('#grpFondo .selected');
   if(f){
     S.fondo=f.textContent.trim();
@@ -1619,6 +1637,22 @@ function showSuccess(){
   document.getElementById('cSubmitBtn').disabled=false;
   document.getElementById('cSubmitBtn').innerHTML='Invia la richiesta <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7h10M7.5 3l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>';
 }
+
+
+  // Fallback: mailto con tutti i dati
+  const mailtoUrl='mailto:marco.buzzoni@azimut.it'
+    +'?subject='+encodeURIComponent('Consulenza previdenziale — '+nome+' '+cognome)
+    +'&body='+encodeURIComponent(corpoEmail);
+  window.location.href=mailtoUrl;
+  showSuccess();
+
+function showSuccess(){
+  document.getElementById('contactForm').style.display='none';
+  document.getElementById('contactSuccess').style.display='';
+  document.getElementById('cSubmitBtn').disabled=false;
+  document.getElementById('cSubmitBtn').innerHTML='Invia la richiesta <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7h10M7.5 3l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>';
+}
+
 </script>
 </body>
 </html>
