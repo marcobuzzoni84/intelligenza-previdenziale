@@ -1,5 +1,6 @@
+const https = require('https');
+
 exports.handler = async function(event, context) {
-  // CORS preflight
   if (event.httpMethod === 'OPTIONS') {
     return {
       statusCode: 200,
@@ -25,52 +26,49 @@ exports.handler = async function(event, context) {
     };
   }
 
-  try {
-    const body = JSON.parse(event.body);
-
-    // Strip pdfB64 from messages if too large (Netlify body limit 6MB)
-    if (body.messages) {
-      body.messages = body.messages.map(m => {
-        if (Array.isArray(m.content)) {
-          return {
-            ...m,
-            content: m.content.map(c => {
-              if (c.type === 'document' && c.source && c.source.data && c.source.data.length > 500000) {
-                return { type: 'text', text: '[PDF rimosso per dimensione]' };
-              }
-              return c;
-            })
-          };
+  return new Promise((resolve) => {
+    try {
+      const bodyData = event.body;
+      const options = {
+        hostname: 'api.anthropic.com',
+        path: '/v1/messages',
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': ANTHROPIC_API_KEY,
+          'anthropic-version': '2023-06-01',
+          'Content-Length': Buffer.byteLength(bodyData)
         }
-        return m;
+      };
+
+      const req = https.request(options, (res) => {
+        let data = '';
+        res.on('data', (chunk) => { data += chunk; });
+        res.on('end', () => {
+          resolve({
+            statusCode: res.statusCode,
+            headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
+            body: data
+          });
+        });
+      });
+
+      req.on('error', (err) => {
+        resolve({
+          statusCode: 500,
+          headers: { 'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json' },
+          body: JSON.stringify({ error: err.message })
+        });
+      });
+
+      req.write(bodyData);
+      req.end();
+    } catch (err) {
+      resolve({
+        statusCode: 500,
+        headers: { 'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json' },
+        body: JSON.stringify({ error: err.message })
       });
     }
-
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': ANTHROPIC_API_KEY,
-        'anthropic-version': '2023-06-01'
-      },
-      body: JSON.stringify(body)
-    });
-
-    const data = await response.json();
-
-    return {
-      statusCode: response.status,
-      headers: {
-        'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': '*'
-      },
-      body: JSON.stringify(data)
-    };
-  } catch (err) {
-    return {
-      statusCode: 500,
-      headers: { 'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json' },
-      body: JSON.stringify({ error: err.message })
-    };
-  }
+  });
 };
