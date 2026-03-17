@@ -1,13 +1,24 @@
+# netlify.toml
+# Configurazione Netlify — mettilo nella ROOT del progetto
+
 [build]
+  # Nessun build step: carichiamo HTML statico
   publish = "."
-  functions = "netlify/functions"
 
 [functions]
-  node_bundler = "esbuild"
+  # Dove si trovano le Netlify Functions
+  directory = "netlify/functions"
 
+# Redirect: tutte le pagine → index.html (Single Page App)
+[[redirects]]
+  from   = "/*"
+  to     = "/index.html"
+  status = 200
+
+# Header di sicurezza consigliati
 [[headers]]
   for = "/*"
   [headers.values]
-    X-Frame-Options = "DENY"
+    X-Frame-Options        = "DENY"
     X-Content-Type-Options = "nosniff"
-    Access-Control-Allow-Origin = "*"
+    Referrer-Policy        = "strict-origin-when-cross-origin"
