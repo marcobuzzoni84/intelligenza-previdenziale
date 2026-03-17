@@ -417,10 +417,6 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.4) sepia(1) s
         <div class="avatar-card-check"></div>
       </div>
     </div>
-    <button class="btn-primary" onclick="goStep1()">
-      Inizia con <span id="avNameBtn">Luca</span>
-      <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7h10M7.5 3l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-    </button>
   </div>
 
   <!-- STEP 1: PROFILO -->
@@ -817,7 +813,6 @@ function selectAvatar(g){
   goStep1();
   document.getElementById('cardM').querySelector('.avatar-card-check').textContent=g==='M'?'✓':'';
   document.getElementById('cardF').querySelector('.avatar-card-check').textContent=g==='F'?'✓':'';
-  document.getElementById('avNameBtn').textContent=av().name;
 }
 function applyAvatar(){
   const a=av();
@@ -834,7 +829,7 @@ function applyAvatar(){
 }
 
 // ── FLOW ──────────────────────────────────────────────
-function startFlow(){gtag('event','simulatore_avviato');document.getElementById('flow').style.display='block';document.body.style.overflow='hidden';}
+function startFlow(){if(typeof gtag!=='undefined')gtag('event','simulatore_avviato');document.getElementById('flow').style.display='block';document.body.style.overflow='hidden';}
 function closeFlow(){document.getElementById('flow').style.display='none';document.body.style.overflow='';}
 function show(id){document.getElementById(id).style.display='';}
 function hide(id){document.getElementById(id).style.display='none';}
@@ -1320,7 +1315,7 @@ async function doAnalysis(){
   hide('step1');hide('step2');show('step3');setDot(3);scrollTop();
   show('aiLoader');hide('resultBox');applyAvatar();
   const c=calcBase();
-  gtag('event','analisi_completata',{tipo_lavoro:S.tipo,eta:S.eta,tasso_sostituzione:c.tasso});
+  if(typeof gtag!=='undefined')gtag('event','analisi_completata',{tipo_lavoro:S.tipo,eta:S.eta,tasso_sostituzione:c.tasso});
   const nome=S.nome||(S.parsed&&S.parsed.nome?S.parsed.nome:null);
   // Bubble intro step 3
   const bbl3=document.getElementById('avBubble3');
@@ -1510,7 +1505,7 @@ async function sendChat(){
 }
 
 // ── CONTACT MODAL ─────────────────────────────────────
-function openContact(){gtag('event','prenotazione_aperta');
+function openContact(){if(typeof gtag!=='undefined')gtag('event','prenotazione_aperta');
   // Pre-popola nome/cognome/email se disponibili
   if(S.nome)document.getElementById('cNome').value=S.nome;
   if(S.cognome)document.getElementById('cCognome').value=S.cognome;
@@ -1535,7 +1530,7 @@ async function submitContact(){
   if(!cf||cf.length!==16){errEl.textContent='⚠ Il codice fiscale è obbligatorio (16 caratteri).';errEl.style.display='block';return;}
   if(!email||!email.includes('@')){errEl.textContent='⚠ Inserisci un indirizzo email valido.';errEl.style.display='block';return;}
   errEl.style.display='none';
-  gtag('event','lead_generato',{event_category:'conversione'});
+  if(typeof gtag!=='undefined')gtag('event','lead_generato',{event_category:'conversione'});
   const btn=document.getElementById('cSubmitBtn');btn.disabled=true;btn.textContent='Invio in corso…';
   const tel=document.getElementById('cTel').value.trim();
   const note=document.getElementById('cNote').value.trim();
