@@ -333,7 +333,6 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.4) sepia(1) s
 .tipo-card.selected .tipo-label{color:var(--gold);}
 /* ── MOBILE ── */
 @media(max-width:600px){
-  .step-content[style*="display:none"]{display:none!important;}
   .nav-cta{display:none!important;}
   .hero-h1{font-size:clamp(32px,8vw,48px)!important;}
   .btn-primary{width:100%;justify-content:center;}
@@ -417,12 +416,6 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.4) sepia(1) s
         <div class="avatar-card-label">Sofia</div><div class="avatar-card-sub">Assistente virtuale</div>
         <div class="avatar-card-check"></div>
       </div>
-    </div>
-    <div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin-top:28px;">
-      <button class="btn-primary" onclick="goStep1()" id="btnGoStep1">
-        Inizia con <span id="avNameBtn">Luca</span>
-        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7h10M7.5 3l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-      </button>
     </div>
   </div>
 
@@ -556,7 +549,7 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.4) sepia(1) s
           <div class="field-error" id="errVersamento">Inserisci il versamento annuale</div>
         </div>
       </div>
-    </div>
+    
     <!-- PDF collassabile -->
     <button class="pdf-toggle" id="pdfToggleBtn" onclick="togglePdf()">
       <span>📄</span>
@@ -584,6 +577,8 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.4) sepia(1) s
       </button>
       <button class="btn-secondary" onclick="goStep1Back()">← Indietro</button>
     </div>
+  </div>
+
   </div>
 
   <!-- STEP 3: RISULTATO -->
@@ -817,10 +812,9 @@ function selectAvatar(g){
   S.avatar=g;
   document.getElementById('cardM').className='avatar-card'+(g==='M'?' sel':'');
   document.getElementById('cardF').className='avatar-card'+(g==='F'?' sel':'');
+  goStep1();
   document.getElementById('cardM').querySelector('.avatar-card-check').textContent=g==='M'?'✓':'';
   document.getElementById('cardF').querySelector('.avatar-card-check').textContent=g==='F'?'✓':'';
-  const btn=document.getElementById('avNameBtn');
-  if(btn)btn.textContent=av().name;
 }
 function applyAvatar(){
   const a=av();
@@ -1184,7 +1178,6 @@ function aggiornaRalDipendente(){
     if(vers&&!vers.value)vers.value=tfr;
   }
 }
-function showFondo(v){document.getElementById('fondoBox').style.display=v?'':'none';}
 function showTfrNote(v){
   const box=document.getElementById('tfrAutoBox');
   const fb=document.getElementById('fondoBox');
@@ -1238,7 +1231,14 @@ function validate(){
   if(!document.getElementById('dataNascita').value){
     document.getElementById('errData').style.display='block';document.getElementById('dataNascita').classList.add('error');ok=false;
   }else{document.getElementById('errData').style.display='none';document.getElementById('dataNascita').classList.remove('error');}
-
+  const objVal=document.getElementById('obiettivo').value;
+  if(!objVal||parseInt(objVal)<100){
+    const errObj=document.getElementById('errObiettivo');if(errObj)errObj.style.display='block';
+    document.getElementById('obiettivo').classList.add('error');ok=false;
+  }else{
+    const errObj=document.getElementById('errObiettivo');if(errObj)errObj.style.display='none';
+    document.getElementById('obiettivo').classList.remove('error');
+  }
   const selFondo=document.querySelector('#grpFondo .selected');
   const hasFondo=selFondo&&(selFondo.textContent.includes('TFR')||selFondo.textContent.includes('volontario'));
   if(hasFondo){
@@ -1482,6 +1482,7 @@ function buildContent(txt){
 // ── CHAT ─────────────────────────────────────────────
 function addMsg(role,text){
   const wrap=document.getElementById('chatMsgs');
+  if(!wrap)return;
   const div=document.createElement('div');div.className=`msg ${role} fade-in`;
   const lbl=role==='ai'?av().name.slice(0,2).toUpperCase():'Tu';
   div.innerHTML=`<div class="msg-avatar">${lbl}</div><div class="msg-bubble">${text.replace(/\n/g,'<br>')}</div>`;
@@ -1637,6 +1638,7 @@ function showSuccess(){
   document.getElementById('cSubmitBtn').disabled=false;
   document.getElementById('cSubmitBtn').innerHTML='Invia la richiesta <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7h10M7.5 3l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>';
 }
+
 </script>
 </body>
 </html>
