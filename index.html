@@ -389,6 +389,9 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.4) sepia(1) s
   <input type="text" name="telefono"><input type="text" name="codice_fiscale">
   <input type="text" name="orari_preferiti"><textarea name="note"></textarea>
   <textarea name="dati_simulatore"></textarea><textarea name="profilo_inserito"></textarea>
+  <textarea name="chat_avatar"></textarea>
+  <textarea name="chat_buzzoni"></textarea>
+  <textarea name="analisi_ai"></textarea>
 </form>
 
 <nav>
@@ -1741,23 +1744,15 @@ async function submitContact(){
     fd.append('note',note||'');
     fd.append('dati_simulatore',datiSim);
     fd.append('profilo_inserito',S.profilo||'');
+    fd.append('chat_avatar',chatLog);
+    fd.append('chat_buzzoni',bioLog);
+    fd.append('analisi_ai',(S.narrativaCompleta||'')+(S.conclusioneAvatar?'\n\nCOMMENTO AVATAR:\n'+S.conclusioneAvatar:''));
     await fetch('/',{method:'POST',body:fd});
   }catch(_){}
 
-  // 2. Netlify Function — invia email a marco.buzzoni@azimut.it tramite Claude proxy
-  //    (usa la stessa function /claude per semplicità, oppure crea /send-email separata)
-  //    Per ora: fallback mailto automatico che apre il client email con tutti i dati
-  try{
-    const emailSubject='Nuova richiesta consulenza — '+nome+' '+cognome+' — Simulatore Gap Pensionistico';
-    const mailtoUrl='mailto:marco.buzzoni@azimut.it'
-      +'?subject='+encodeURIComponent(emailSubject)
-      +'&body='+encodeURIComponent(corpoEmail);
-    // Apri in una nuova tab per non interrompere il flusso
-    const a=document.createElement('a');
-    a.href=mailtoUrl;a.target='_blank';a.rel='noopener';
-    document.body.appendChild(a);a.click();
-    setTimeout(()=>a.remove(),500);
-  }catch(_){}
+  // I dati vengono salvati e inviati tramite Netlify Forms.
+  // Netlify invia automaticamente una notifica email a marco.buzzoni@azimut.it
+  // (configurare nelle impostazioni Netlify: Forms → Notifications → Email notification)
 
   showSuccess();
 }
