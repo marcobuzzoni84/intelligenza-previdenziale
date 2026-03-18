@@ -1767,7 +1767,48 @@ function showSuccess(){
   document.getElementById('cSubmitBtn').disabled=false;
   document.getElementById('cSubmitBtn').innerHTML='Invia la richiesta <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7h10M7.5 3l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>';
 }
-function openPrivacy(){alert('I tuoi dati saranno trattati esclusivamente da Marco Buzzoni – Azimut per finalità di consulenza previdenziale, ai sensi del Reg. UE 679/2016 (GDPR). Non saranno ceduti a terzi. Puoi esercitare i tuoi diritti scrivendo a marco.buzzoni@azimut.it');}
+function openPrivacy(){
+  const existing=document.getElementById('privacyModal');
+  if(existing){existing.style.display='flex';return;}
+  const m=document.createElement('div');
+  m.id='privacyModal';
+  m.style.cssText='position:fixed;inset:0;z-index:700;background:rgba(10,13,20,.96);backdrop-filter:blur(16px);display:flex;align-items:center;justify-content:center;padding:24px;overflow-y:auto;';
+  m.innerHTML=`
+    <div style="background:#111827;border:1px solid rgba(201,168,76,.3);border-radius:10px;padding:36px;max-width:580px;width:100%;position:relative;max-height:88vh;overflow-y:auto;">
+      <button onclick="document.getElementById('privacyModal').style.display='none'" style="position:absolute;top:16px;right:20px;background:none;border:none;color:#6b7280;cursor:pointer;font-size:22px;line-height:1;">✕</button>
+      <div style="font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:400;color:#fff;margin-bottom:6px;">Informativa sulla Privacy</div>
+      <div style="font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:#c9a84c;margin-bottom:24px;">Reg. UE 2016/679 — GDPR</div>
+
+      <div style="font-size:13px;line-height:1.85;color:#9ca3af;">
+
+        <p style="margin-bottom:16px;"><strong style="color:#fff;">1. Titolare del trattamento</strong><br>
+        Il titolare del trattamento dei dati personali raccolti tramite questo simulatore è <strong style="color:#fff;">Marco Buzzoni</strong>, Consulente Finanziario abilitato, operante per conto di <strong style="color:#fff;">Azimut Capital Management SGR S.p.A.</strong>, con ufficio in Via Balicco 101, 23900 Lecco (LC).<br>
+        Contatto: <a href="mailto:marco.buzzoni@azimut.it" style="color:#c9a84c;">marco.buzzoni@azimut.it</a></p>
+
+        <p style="margin-bottom:16px;"><strong style="color:#fff;">2. Dati raccolti</strong><br>
+        I dati raccolti attraverso il simulatore includono: dati anagrafici (nome, cognome, codice fiscale, data di nascita), dati di contatto (email, telefono), dati reddituali e previdenziali inseriti volontariamente dall'utente, nonché le preferenze di orario per la consulenza.</p>
+
+        <p style="margin-bottom:16px;"><strong style="color:#fff;">3. Finalità e base giuridica</strong><br>
+        I dati sono trattati esclusivamente per finalità di consulenza previdenziale e finanziaria personalizzata, su richiesta esplicita dell'utente. La base giuridica è il consenso dell'interessato (art. 6, par. 1, lett. a del GDPR), prestato al momento dell'invio della richiesta.</p>
+
+        <p style="margin-bottom:16px;"><strong style="color:#fff;">4. Modalità di trattamento e conservazione</strong><br>
+        I dati sono trattati con strumenti informatici, in modo sicuro e riservato. Non vengono ceduti, comunicati, venduti o trasferiti a soggetti terzi per alcuna finalità commerciale o promozionale. I dati saranno conservati per il tempo strettamente necessario all'erogazione del servizio di consulenza richiesto.</p>
+
+        <p style="margin-bottom:16px;"><strong style="color:#fff;">5. Diritti dell'interessato</strong><br>
+        In qualità di interessato, hai il diritto di accedere ai tuoi dati, richiederne la rettifica o la cancellazione, opporti al trattamento, richiedere la portabilità dei dati e revocare il consenso in qualsiasi momento, senza pregiudicare la liceità del trattamento effettuato prima della revoca.<br>
+        Per esercitare questi diritti, scrivi a: <a href="mailto:marco.buzzoni@azimut.it" style="color:#c9a84c;">marco.buzzoni@azimut.it</a></p>
+
+        <p style="margin-bottom:0;"><strong style="color:#fff;">6. Autorità di controllo</strong><br>
+        Hai il diritto di proporre reclamo al Garante per la protezione dei dati personali (www.garanteprivacy.it) qualora ritenga che il trattamento dei tuoi dati violi la normativa vigente.</p>
+
+      </div>
+
+      <div style="margin-top:28px;text-align:center;">
+        <button onclick="document.getElementById('privacyModal').style.display='none'" style="background:#c9a84c;color:#0a0d14;border:none;padding:12px 36px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;border-radius:3px;cursor:pointer;">Ho letto e capito</button>
+      </div>
+    </div>`;
+  document.body.appendChild(m);
+}
 </script>
 </body>
 </html>
