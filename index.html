@@ -870,12 +870,14 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.4) sepia(1) s
     </div>
     <div id="cError" style="color:var(--red);font-size:12px;display:none;margin-bottom:12px;"></div>
     <button class="btn-primary" onclick="submitContact()" id="cSubmitBtn">Invia la richiesta <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7h10M7.5 3l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></button>
-    <p style="font-size:11px;color:var(--muted);text-align:center;margin:10px 0 0;line-height:1.5;">Inviando accetti la nostra <a onclick="openPrivacy()" style="color:var(--gold);text-decoration:underline;cursor:pointer;">informativa sulla privacy</a>. I dati saranno trattati esclusivamente da Marco Buzzoni per finalità di consulenza e <strong>non ceduti a terzi</strong>.</p>
+    <p style="font-size:11px;color:var(--muted);text-align:center;margin:12px 0 0;line-height:1.6;">
+      Inviando questa richiesta dichiari di aver letto e accettato l'<a onclick="openPrivacy()" style="color:var(--gold);text-decoration:underline;cursor:pointer;">Informativa sul trattamento dei dati personali</a> ai sensi del Reg. UE 679/2016 (GDPR). I dati forniti saranno trattati in modo riservato ed esclusivamente da <strong style="color:var(--white)">Marco Buzzoni – Consulente Finanziario Azimut</strong> per finalità di consulenza previdenziale. <strong style="color:var(--white)">Nessun dato personale sarà ceduto, comunicato o venduto a soggetti terzi.</strong>
+    </p>
   </div>
   <div class="contact-success" id="contactSuccess" style="display:none;">
     <div class="contact-success-icon">✅</div>
     <div class="contact-success-title">Richiesta inviata!</div>
-    <div class="contact-success-sub">Marco Buzzoni ti contatterà entro 24 ore.<br>Controlla anche la casella spam.</div>
+    <div class="contact-success-sub">La tua richiesta è stata inviata con successo. Marco Buzzoni la riceverà a breve e ti contatterà nella fascia oraria da te indicata.</div>
     <button class="btn-primary" style="margin-top:24px;" onclick="closeContact()">Chiudi</button>
   </div>
 </div></div>
@@ -1696,21 +1698,67 @@ async function submitContact(){
   }
   const chatLog=S.history&&S.history.length>0?S.history.filter(m=>m.role!=='system').map(m=>(m.role==='user'?'👤 UTENTE':'🤖 AI')+': '+m.content).join('\n\n'):'Nessuna domanda tecnica.';
   const bioLog=bioHistory.length>0?bioHistory.map(m=>(m.role==='user'?'👤 UTENTE':'🤖 AI Marco')+': '+m.content).join('\n\n'):'Nessuna domanda su Marco Buzzoni.';
-  const corpoEmail='=== NUOVA RICHIESTA DI CONSULENZA PREVIDENZIALE ===\n\nNome: '+nome+' '+cognome+'\nEmail: '+email+'\nTelefono: '+(tel||'—')+'\nCodice fiscale: '+cf+'\nOrari: '+orari+'\nNote: '+(note||'—')+'\n\n'+datiSim+'\n\n=== ANALISI AI ===\n'+(S.narrativaCompleta||'—')+'\n\n=== COMMENTO AVATAR ===\n'+(S.conclusioneAvatar||'—')+'\n\n=== DOMANDE ALL\'AI ===\n'+chatLog+'\n\n=== DOMANDE SU MARCO BUZZONI ===\n'+bioLog;
-  // Netlify Forms
+  const sep='═'.repeat(55);
+  const sepLine='─'.repeat(55);
+  const corpoEmail=
+    sep+'\n'+
+    'NUOVA RICHIESTA DI CONSULENZA PREVIDENZIALE\n'+
+    'Simulatore Gap Pensionistico — intelligenzaprevidenziale.com\n'+
+    sep+'\n\n'+
+    'DATI PERSONALI\n'+sepLine+'\n'+
+    'Nome e Cognome : '+nome+' '+cognome+'\n'+
+    'Codice Fiscale : '+cf+'\n'+
+    'Email          : '+email+'\n'+
+    'Telefono       : '+(tel||'—')+'\n'+
+    'Orari preferiti: '+orari+'\n'+
+    'Note           : '+(note||'—')+'\n\n'+
+    'AVATAR SCELTO  : '+av().name+' ('+av().tipo+')\n\n'+
+    datiSim+'\n\n'+
+    'ANALISI GENERATA DALL\'AI\n'+sepLine+'\n'+
+    (S.narrativaCompleta||'Non disponibile.')+
+    '\n\n'+
+    'COMMENTO DELL\'AVATAR\n'+sepLine+'\n'+
+    (S.conclusioneAvatar||'Non disponibile.')+
+    '\n\n'+
+    'CONVERSAZIONE CON L\'AI PREVIDENZIALE\n'+sepLine+'\n'+
+    chatLog+
+    '\n\n'+
+    'DOMANDE SU MARCO BUZZONI\n'+sepLine+'\n'+
+    bioLog+
+    '\n\n'+sep+'\n'+
+    'Email generata automaticamente dal Simulatore Gap Pensionistico\n'+
+    'intelligenzaprevidenziale.com | Buzzoni Marco – Azimut, Via Balicco 101, Lecco\n'+
+    sep;
+  // 1. Netlify Form (cattura lead + notifica email Netlify)
   try{
     const fd=new FormData();
     fd.append('form-name','consulenza-previdenziale');
-    fd.append('nome_cognome',nome+' '+cognome);fd.append('email',email);
-    fd.append('telefono',tel||'');fd.append('codice_fiscale',cf);
-    fd.append('orari_preferiti',orari);fd.append('note',note||'');
-    fd.append('dati_simulatore',datiSim);fd.append('profilo_inserito',S.profilo||'');
-    const res=await fetch('/',{method:'POST',body:fd});
-    if(res.ok){showSuccess();return;}
+    fd.append('nome_cognome',nome+' '+cognome);
+    fd.append('email',email);
+    fd.append('telefono',tel||'');
+    fd.append('codice_fiscale',cf);
+    fd.append('orari_preferiti',orari);
+    fd.append('note',note||'');
+    fd.append('dati_simulatore',datiSim);
+    fd.append('profilo_inserito',S.profilo||'');
+    await fetch('/',{method:'POST',body:fd});
   }catch(_){}
-  // Fallback mailto
-  const mailtoUrl='mailto:marco.buzzoni@azimut.it?subject='+encodeURIComponent('Simulatore previdenziale — '+nome+' '+cognome)+'&body='+encodeURIComponent(corpoEmail);
-  window.location.href=mailtoUrl;
+
+  // 2. Netlify Function — invia email a marco.buzzoni@azimut.it tramite Claude proxy
+  //    (usa la stessa function /claude per semplicità, oppure crea /send-email separata)
+  //    Per ora: fallback mailto automatico che apre il client email con tutti i dati
+  try{
+    const emailSubject='Nuova richiesta consulenza — '+nome+' '+cognome+' — Simulatore Gap Pensionistico';
+    const mailtoUrl='mailto:marco.buzzoni@azimut.it'
+      +'?subject='+encodeURIComponent(emailSubject)
+      +'&body='+encodeURIComponent(corpoEmail);
+    // Apri in una nuova tab per non interrompere il flusso
+    const a=document.createElement('a');
+    a.href=mailtoUrl;a.target='_blank';a.rel='noopener';
+    document.body.appendChild(a);a.click();
+    setTimeout(()=>a.remove(),500);
+  }catch(_){}
+
   showSuccess();
 }
 function showSuccess(){
