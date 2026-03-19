@@ -687,9 +687,9 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.4) sepia(1) s
       <div class="field-wrap full">
         <div class="field-label">Fondo pensione complementare</div>
         <div class="field-radio-group" id="grpFondo">
-          <button class="radio-btn selected" onclick="radioClick('grpFondo',this);showFondo(false);showTfrNote(false)">Non ancora</button>
-          <button class="radio-btn" onclick="radioClick('grpFondo',this);showFondo(false);showTfrNote(true)" id="btnFondoTfr">Sì, con TFR</button>
-          <button class="radio-btn" onclick="radioClick('grpFondo',this);showFondo(true);showTfrNote(false)">Sì, con contributo volontario</button>
+          <button class="radio-btn selected" onclick="radioClick('grpFondo',this);fondoBoxSet(false,false)">Non ancora</button>
+          <button class="radio-btn" onclick="radioClick('grpFondo',this);fondoBoxSet(true,true)" id="btnFondoTfr">Sì, con TFR</button>
+          <button class="radio-btn" onclick="radioClick('grpFondo',this);fondoBoxSet(true,false)">Sì, con contributo volontario</button>
         </div>
       </div>
       <div class="field-wrap full" id="fondoBox" style="display:none;">
@@ -705,8 +705,7 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.4) sepia(1) s
         </div>
         <div class="field-wrap" style="margin-top:14px;">
           <div class="field-label">Versamento annuale al fondo <span class="badge-req">obbligatorio</span></div>
-          <div class="euro-input"><span class="euro-sign">€</span><input class="field-input" type="number" id="versamentoAnnuo" placeholder="Es: 2.400" min="0"></div>
-          <div class="field-sublabel">Somma di contributo lavoratore + eventuale contributo datore</div>
+          <div class="euro-input"><span class="euro-sign">€</span><input class="field-input" type="number" id="versamentoAnnuo" placeholder="Es: 5.300" min="0"></div>
           <div class="field-error" id="errVersamento">Inserisci il versamento annuale</div>
         </div>
       </div>
@@ -1086,18 +1085,20 @@ async function parsePrompt(){
   try{
     const isNetlify=window.location.hostname.includes('netlify.app')||window.location.hostname.includes('intelligenzaprevidenziale.com');
     const parseUrl=isNetlify?'/.netlify/functions/claude':'https://api.anthropic.com/v1/messages';
-    const r=await fetch(parseUrl,{
-      method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:800,
-        messages:[{role:'user',content:`Estrai dal testo i dati previdenziali. Restituisci SOLO JSON valido, nessun testo extra, nessun markdown.
-Struttura ESATTA:
-{"nome":"","cognome":"","eta":0,"tipo":"","ralEsatta":0,"ralNota":"","contributi":0,"fondo":"","haFondo":false,"montante":0,"notaEta":"","notaRal":"","notaContributi":"","notaTipo":"","notaFondo":""}
-- tipo: solo uno di "Dipendente privato","Dipendente pubblico","Autonomo / P.IVA","Imprenditore"
-- fondo: solo uno di "Non ancora","Sì, ce l'ho","Solo TFR in azienda"
-- ralEsatta: RAL annua lorda in euro. Se cita netto mensile → round(netto*12/0.68). Se non citata: 0
-- eta: anni se citata, altrimenti 0. contributi: anni se citati, altrimenti 0
-TESTO: "${S.profilo}"`}]})
-    });
+    const userMsg=`Estrai dal testo i dati previdenziali. SOLO JSON valido, nessun testo extra.
+Struttura: {"nome":"","cognome":"","eta":0,"tipo":"","ralEsatta":0,"ralNota":"","contributi":0,"fondo":"","haFondo":false,"montante":0,"versamentoAnnuo":0,"notaEta":"","notaRal":"","notaContributi":"","notaTipo":"","notaFondo":""}
+- tipo: "Dipendente privato","Dipendente pubblico","Autonomo / P.IVA","Imprenditore"
+- fondo: "Non ancora","Sì, con TFR","Sì, con contributo volontario"
+- haFondo: true se ha fondo pensione. montante: euro accumulati (0 se non citato). versamentoAnnuo: euro/anno (0 se non citato)
+- ralEsatta: RAL lorda annua; se netto mensile → round(netto*12/0.68); 0 se non citata
+- eta e contributi: anni se citati, altrimenti 0
+TESTO: "${S.profilo}"`;
+    const payload=isNetlify
+      ?{mode:'parser',messages:[{role:'user',content:userMsg}],maxTokens:600}
+      :{model:'claude-sonnet-4-20250514',max_tokens:600,
+        system:'Sei un estrattore JSON. Risposta: SOLO JSON valido, nessun testo extra.',
+        messages:[{role:'user',content:userMsg}]};
+    const r=await fetch(parseUrl,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
     const d=await r.json();
     const txt=d.content[0].text.trim().replace(/```json|```/g,'');
     const p=JSON.parse(txt);S.parsed=p;
@@ -1116,15 +1117,31 @@ function applyParsed(p){
   if(p.contributi>0){const v=Math.min(42,p.contributi);document.getElementById('contributi').value=v;document.getElementById('contVal').textContent=v+' anni';}
   if(p.fondo){
     document.querySelectorAll('#grpFondo .radio-btn').forEach(b=>b.classList.remove('selected'));
-    let matched=false;
+    let isTfr=false, isVolontario=false;
+    const fl=p.fondo.toLowerCase();
+    if(fl.includes('tfr')){isTfr=true;}
+    else if(p.haFondo||fl.includes('volontario')||fl.includes('sì')||fl.includes('si,')){isVolontario=true;}
+
     document.querySelectorAll('#grpFondo .radio-btn').forEach(b=>{
       if(b.style.display==='none')return;
-      if(b.textContent.trim()===p.fondo){b.classList.add('selected');matched=true;}
+      const bt=b.textContent.toLowerCase();
+      if(isTfr&&bt.includes('tfr'))         {b.classList.add('selected');}
+      else if(isVolontario&&bt.includes('volontario')){b.classList.add('selected');}
     });
-    if(!matched&&p.haFondo){document.querySelectorAll('#grpFondo .radio-btn').forEach(b=>{if(b.textContent.includes('volontario')){b.classList.add('selected');matched=true;}});}
-    if(p.haFondo)showFondo(true);
+
+    // Apri i campi corretti
+    if(isTfr)        {fondoBoxSet(true,true);}
+    else if(isVolontario){fondoBoxSet(true,false);}
   }
-  if(p.montante>0)document.getElementById('montante').value=p.montante;
+  // Pre-compila montante e versamento se presenti nel prompt
+  if(p.montante>0){
+    const el=document.getElementById('montante');
+    if(el)el.value=p.montante;
+  }
+  if(p.versamentoAnnuo>0){
+    const el=document.getElementById('versamentoAnnuo');
+    if(el)el.value=p.versamentoAnnuo;
+  }
 }
 function showLockedState(p){
   applyAvatar();
@@ -1193,17 +1210,25 @@ function aggiornaRalDipendente(){
   if(tfrBox&&tfrBox.style.display!=='none'&&ral>0){
     const tfr=Math.round(ral*0.0691);
     const el=document.getElementById('tfrAutoVal');if(el)el.textContent='€ '+fmt(tfr)+' / anno';
-    const vers=document.getElementById('versamentoAnnuo');if(vers&&!vers.value)vers.value=tfr;
+    // non impostiamo valori di default per il versamento annuale
   }
 }
+function fondoBoxSet(showBox, showTfr){
+  const fb=document.getElementById('fondoBox');
+  const tfr=document.getElementById('tfrAutoBox');
+  if(fb)fb.style.display=showBox?'block':'none';
+  if(tfr)tfr.style.display=showTfr?'block':'none';
+  if(showTfr)aggiornaRalDipendente();
+}
 function showFondo(v){
-  const fb=document.getElementById('fondoBox');if(fb)fb.style.display=v?'':'none';
+  const fb=document.getElementById('fondoBox');
+  if(fb)fb.style.display=v?'block':'none';
 }
 function showTfrNote(v){
   const tfrBox=document.getElementById('tfrAutoBox');
   const fondoBox=document.getElementById('fondoBox');
-  if(tfrBox)tfrBox.style.display=v?'':'none';
-  if(fondoBox)fondoBox.style.display=v?'':'none';
+  if(fondoBox)fondoBox.style.display=v?'block':'none';
+  if(tfrBox)tfrBox.style.display=v?'block':'none';
   if(v)aggiornaRalDipendente();
 }
 function aggiornaTipo(){
@@ -1252,14 +1277,19 @@ function validate(){
   if(cv===''||cv===null||parseInt(cv)<0){err('errContributi',true);fld('contributi',true);ok=false;}
   else{err('errContributi',false);fld('contributi',false);}
 
-  // Fondo (se attivo)
+  // Fondo (se attivo) — montante può essere 0 (fondo appena aperto), versamento deve essere >0
   const selFondo=document.querySelector('#grpFondo .selected');
   const hasFondo=selFondo&&(selFondo.textContent.includes('TFR')||selFondo.textContent.includes('volontario'));
   if(hasFondo){
     const mont=document.getElementById('montante').value;
     const vers=document.getElementById('versamentoAnnuo').value;
-    if(!mont||parseInt(mont)<0){err('errMontante',true);ok=false;}else{err('errMontante',false);}
-    if(!vers||parseInt(vers)<0){err('errVersamento',true);ok=false;}else{err('errVersamento',false);}
+    // montante: obbligatorio ma può essere 0
+    if(mont===''||mont===null||isNaN(parseInt(mont))||parseInt(mont)<0){err('errMontante',true);ok=false;}else{err('errMontante',false);}
+    // versamento: deve essere >0
+    if(!vers||isNaN(parseInt(vers))||parseInt(vers)<=0){err('errVersamento',true);ok=false;}else{err('errVersamento',false);}
+  } else {
+    // reset errori fondo se non selezionato
+    err('errMontante',false);err('errVersamento',false);
   }
   return ok;
 }
@@ -1325,6 +1355,19 @@ PREVIDENZA: Si occupa di fondi pensione dal 2007. Preferisce fondi aperti. Ha im
 PERSONA: 41 anni, zona Lecco. Volontario nel consiglio di una scuola dell'infanzia e in un circolo di scacchi. La soddisfazione più grande: la fiducia dei clienti nel lungo periodo.
 DIFFERENZE: Non ha obiettivi commerciali imposti. 19 anni di esperienza di cui 10 come indipendente. Conosce il sistema bancario dall'interno.`;
 
+// ── PROMPT COMBINATO — 1 chiamata invece di 2 ────────────────────────────
+function buildCombinedPrompt(c){
+  const narrativa=buildPrompt(c);
+  const conclusione=buildConclusionPrompt(c);
+  return `${narrativa}
+
+---
+Dopo la narrativa, restituisci un oggetto JSON valido in questo formato ESATTO (no markdown, no testo extra prima o dopo):
+{"narrativa":"[TUTTO L'HTML DELLA NARRATIVA QUI]","conclusione":"[TESTO CONCLUSIONE MAX 60 PAROLE]"}
+
+La chiave "narrativa" contiene l'HTML completo che hai scritto sopra (con <p>,<strong> ecc.).
+La chiave "conclusione" contiene: ${conclusione}`;
+}
 function buildPrompt(c){
   const nn=S.nome||(S.parsed&&S.parsed.nome?S.parsed.nome:null);
   const isP=S.tipo.includes('pubblico');
@@ -1492,18 +1535,27 @@ async function doAnalysis(){
     }
       }catch(eKpi){console.warn('KPI error',eKpi);}
   try{
-    const [prompts0,prompts1]=await Promise.all([callAI(buildPrompt(c)),callAI(buildConclusionPrompt(c))]);
+    // OPT: 1 sola chiamata invece di 2 — risposta JSON con narrativa+conclusione
+    const combinedPrompt=buildCombinedPrompt(c);
+    const rawJson=await callAI(combinedPrompt,[],1400);
     clearInterval(iv);
-    let narrativeHtml=prompts0.replace(/^```html\s*/i,'').replace(/```\s*$/,'').trim();
-    // Per Alex: rimuovi eventuale paragrafo che inizia con "Con i dati" o frasi finali promozionali
+    let parsedResp={narrativa:'',conclusione:''};
+    try{
+      const cleaned=rawJson.replace(/^```json\s*/i,'').replace(/```\s*$/,'').trim();
+      parsedResp=JSON.parse(cleaned);
+    }catch(e){
+      // fallback: tratta tutto come narrativa
+      parsedResp.narrativa=rawJson;
+    }
+    let narrativeHtml=parsedResp.narrativa.replace(/^```html\s*/i,'').replace(/```\s*$/,'').trim();
     if(S.avatar==='M'){
       narrativeHtml=narrativeHtml.replace(/<p[^>]*>\s*Con i dati[\s\S]*?<\/p>/gi,'');
       narrativeHtml=narrativeHtml.replace(/<p[^>]*>[\s\S]*?previdenziale personalizzata[\s\S]*?<\/p>/gi,'');
     }
     document.getElementById('narrativeBox').innerHTML=narrativeHtml;
-    S.narrativaCompleta=prompts0.replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim();
-    S.conclusioneAvatar=prompts1;
-    S.history=[{role:'user',content:buildPrompt(c)},{role:'assistant',content:prompts0}];
+    S.narrativaCompleta=narrativeHtml.replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim();
+    S.conclusioneAvatar=parsedResp.conclusione||'';
+    S.history=[{role:'user',content:combinedPrompt},{role:'assistant',content:parsedResp.narrativa}];
     // narrativeBox: per Alex lo inseriamo dentro alexAnalysisBox, non standalone
     if(S.avatar==='M'){
       // Riquadro "Analisi di Alex" — contiene narrativa + conclusione
@@ -1590,13 +1642,20 @@ async function doAnalysis(){
     hide('aiLoader');show('resultBox');
   }
 }
-async function callAI(msg,hist=[]){
-  const msgs=hist.length?[...hist,{role:'user',content:buildContent(msg)}]:[{role:'user',content:buildContent(msg)}];
+// ── callAI ottimizzata: system prompt fisso sul server (mode="previdenziale")
+async function callAI(msg, hist=[], maxTokens=1200){
   const a=av();
-  const systemPrompt=`Sei ${a.name}, assistente AI esperto di previdenza italiana con un approccio ${a.tono}. NON menzionare mai R.I.T.A. NON usare mai "Caro/Gentile cliente". Profilo investitore dell'utente: ${a.tipo}. REGOLA: cita solo fonti ufficiali (COVIP, Agenzia delle Entrate, INPS, Banca d'Italia, CONSOB, IVASS, D.Lgs. 252/2005). REGOLA: non fornire mai piani operativi dettagliati o raccomandazioni specifiche su cosa fare. Per domande sulla situazione specifica, dai informazioni generali e lascia intendere che la risposta precisa richiede un confronto diretto. Call gratuita con Marco Buzzoni disponibile.`;
+  const msgs=hist.length
+    ?[...hist,{role:'user',content:buildContent(msg)}]
+    :[{role:'user',content:buildContent(msg)}];
   const isNetlify=window.location.hostname.includes('netlify.app')||window.location.hostname.includes('intelligenzaprevidenziale.com');
   const apiUrl=isNetlify?'/.netlify/functions/claude':'https://api.anthropic.com/v1/messages';
-  const r=await fetch(apiUrl,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1200,system:systemPrompt,messages:msgs})});
+  const payload=isNetlify
+    ?{mode:'previdenziale', avatarName:a.name, avatarTono:a.tono, avatarTipo:a.tipo, messages:msgs, maxTokens}
+    :{model:'claude-sonnet-4-20250514',max_tokens:maxTokens,
+      system:`Sei ${a.name}, assistente AI di previdenza italiana, approccio ${a.tono}. NO R.I.T.A. NO "Caro/Gentile". Fonti: COVIP, INPS, Agenzia Entrate, D.Lgs.252/2005. No consigli operativi specifici.`,
+      messages:msgs};
+  const r=await fetch(apiUrl,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
   if(!r.ok){const errTxt=await r.text().catch(()=>'');throw new Error(r.status+' '+errTxt);}
   return(await r.json()).content[0].text;
 }
@@ -1627,7 +1686,7 @@ async function sendChat(){
     const reply=await callAI(ctx,S.history);
     typing.remove();addMsg('ai',reply);
     S.history.push({role:'user',content:msg},{role:'assistant',content:reply});
-    if(S.history.length>14)S.history=S.history.slice(-14);
+    if(S.history.length>6)S.history=S.history.slice(-6);  // OPT: max 6 msg (erano 14)
   }catch(e){typing.remove();addMsg('ai','Problema tecnico. Riprova o contatta Marco Buzzoni direttamente.');}
   document.getElementById('sendBtn').disabled=false;wrap.scrollTop=wrap.scrollHeight;
 }
@@ -1651,10 +1710,13 @@ async function sendBio(){
   wrap.appendChild(typing);wrap.scrollTop=wrap.scrollHeight;
   try{
     bioHistory.push({role:'user',content:msg});
-    const msgs=bioHistory.length>8?bioHistory.slice(-8):bioHistory;
+    const msgs=bioHistory.length>6?bioHistory.slice(-6):bioHistory; // OPT: max 6
     const isNetlify=window.location.hostname.includes('netlify.app')||window.location.hostname.includes('intelligenzaprevidenziale.com');
     const apiUrl=isNetlify?'/.netlify/functions/claude':'https://api.anthropic.com/v1/messages';
-    const r=await fetch(apiUrl,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:400,system:MARCO_BIO,messages:msgs})});
+    const bioPayload=isNetlify
+      ?{mode:'marco',messages:msgs,maxTokens:400}
+      :{model:'claude-sonnet-4-20250514',max_tokens:400,system:MARCO_BIO,messages:msgs};
+    const r=await fetch(apiUrl,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(bioPayload)});
     const data=await r.json();const reply=data.content[0].text;
     bioHistory.push({role:'assistant',content:reply});
     typing.remove();wrap.appendChild(bioBubble(reply,'ai'));wrap.scrollTop=wrap.scrollHeight;
