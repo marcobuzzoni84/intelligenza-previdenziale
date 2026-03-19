@@ -1357,16 +1357,19 @@ DIFFERENZE: Non ha obiettivi commerciali imposti. 19 anni di esperienza di cui 1
 
 // ── PROMPT COMBINATO — 1 chiamata invece di 2 ────────────────────────────
 function buildCombinedPrompt(c){
-  const narrativa=buildPrompt(c);
-  const conclusione=buildConclusionPrompt(c);
-  return `${narrativa}
+  const narrativaInstructions=buildPrompt(c);
+  const conclusioneInstructions=buildConclusionPrompt(c);
+  return `Rispondi ESCLUSIVAMENTE con un oggetto JSON valido, senza testo prima o dopo, senza markdown, senza backtick.
+Il JSON deve avere esattamente questa struttura:
+{"narrativa":"...HTML qui...","conclusione":"...testo qui..."}
 
----
-Dopo la narrativa, restituisci un oggetto JSON valido in questo formato ESATTO (no markdown, no testo extra prima o dopo):
-{"narrativa":"[TUTTO L'HTML DELLA NARRATIVA QUI]","conclusione":"[TESTO CONCLUSIONE MAX 60 PAROLE]"}
+Per la chiave "narrativa":
+${narrativaInstructions}
 
-La chiave "narrativa" contiene l'HTML completo che hai scritto sopra (con <p>,<strong> ecc.).
-La chiave "conclusione" contiene: ${conclusione}`;
+Per la chiave "conclusione":
+${conclusioneInstructions}
+
+IMPORTANTE: la risposta deve essere SOLO il JSON. Nessun testo prima, nessun testo dopo.`;
 }
 function buildPrompt(c){
   const nn=S.nome||(S.parsed&&S.parsed.nome?S.parsed.nome:null);
@@ -1541,11 +1544,20 @@ async function doAnalysis(){
     clearInterval(iv);
     let parsedResp={narrativa:'',conclusione:''};
     try{
-      const cleaned=rawJson.replace(/^```json\s*/i,'').replace(/```\s*$/,'').trim();
+      // Pulizia aggressiva: rimuovi tutto prima del { e dopo l'ultimo }
+      let cleaned=rawJson.trim();
+      cleaned=cleaned.replace(/^```json\s*/i,'').replace(/^```\s*/i,'').replace(/```\s*$/,'');
+      // Estrai solo il JSON: trova il primo { e l'ultimo }
+      const firstBrace=cleaned.indexOf('{');
+      const lastBrace=cleaned.lastIndexOf('}');
+      if(firstBrace>=0&&lastBrace>firstBrace){
+        cleaned=cleaned.slice(firstBrace,lastBrace+1);
+      }
       parsedResp=JSON.parse(cleaned);
     }catch(e){
-      // fallback: tratta tutto come narrativa
-      parsedResp.narrativa=rawJson;
+      // fallback: se il JSON non è parsabile, usa tutto come narrativa
+      console.warn('JSON parse failed, using raw as narrativa');
+      parsedResp.narrativa=rawJson.replace(/\{"narrativa":/g,'').replace(/,"conclusione":.*$/s,'').replace(/^"|"$/g,'');
     }
     let narrativeHtml=parsedResp.narrativa.replace(/^```html\s*/i,'').replace(/```\s*$/,'').trim();
     if(S.avatar==='M'){
