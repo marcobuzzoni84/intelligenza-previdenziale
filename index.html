@@ -1315,11 +1315,60 @@ function showPdfGuide(){applyAvatar();document.getElementById('pdfGuide').style.
 function hidePdfGuide(){document.getElementById('pdfGuide').style.display='none';}
 
 // ── CALCOLI ───────────────────────────────────────────────────────────────
-function stimaStip(ral,anni,tipo){
-  // RAL futura = RAL inserita dall'utente proiettata con +1,5%/anno (media ISTAT 2014–2024)
-  const ralFutura=ral*Math.pow(1+WAGE,anni);
-  const nettoCoeff=tipo.includes('Autonomo')||tipo.includes('P.IVA')?0.72:tipo.includes('pubblico')?0.70:0.68;
-  return{ralFutura:Math.round(ralFutura),netto:Math.round(ralFutura*nettoCoeff/12)};
+// ── CALCOLO NETTO DA RAL — aliquote IRPEF 2026 ───────────────────────────
+function calcolaNettoMensile(ralLorda, tipo){
+  // 1. Contributi previdenziali a carico lavoratore
+  //    Dipendente: 9,19% (INPS IVS) | Autonomo/P.IVA: 0% (pagano in dichiarazione)
+  const isDip    = !tipo.includes('Autonomo')&&!tipo.includes('P.IVA')&&!tipo.includes('Imprenditore');
+  const isAut    = tipo.includes('Autonomo')||tipo.includes('P.IVA')||tipo.includes('Imprenditore');
+  const contribLav = isDip ? ralLorda * 0.0919 : 0;
+  const imponibile = ralLorda - contribLav;
+
+  // 2. IRPEF 2026 — scaglioni vigenti (Legge Bilancio 2025)
+  //    ≤ 28.000: 23% | 28.001–50.000: 35% | > 50.000: 43%
+  let irpefLorda = 0;
+  if(imponibile <= 28000){
+    irpefLorda = imponibile * 0.23;
+  } else if(imponibile <= 50000){
+    irpefLorda = 28000*0.23 + (imponibile-28000)*0.35;
+  } else {
+    irpefLorda = 28000*0.23 + 22000*0.35 + (imponibile-50000)*0.43;
+  }
+
+  // 3. Detrazione da lavoro dipendente (art. 13 TUIR) — media stimata
+  //    Dipendenti: detrazione decrescente da ~1.955€ (≤15k) a 0 (>55k)
+  //    Autonomi: detrazione fissa ~500€
+  let detrazioneLavoro = 0;
+  if(isDip){
+    if(imponibile <= 15000)       detrazioneLavoro = 1955;
+    else if(imponibile <= 28000)  detrazioneLavoro = 1910 * (1 - (imponibile-15000)/13000);
+    else if(imponibile <= 50000)  detrazioneLavoro = Math.max(0, 1190 * (1-(imponibile-28000)/22000));
+    // > 50.000: detrazione = 0
+  } else {
+    detrazioneLavoro = 500; // stima autonomi
+  }
+
+  // 4. Addizionale regionale media 2026: 1,73% (media nazionale Mef)
+  //    Addizionale comunale media: 0,50%
+  const addReg = imponibile * 0.0173;
+  const addCom = imponibile * 0.005;
+
+  // 5. IRPEF netta
+  const irpefNetta = Math.max(0, irpefLorda - detrazioneLavoro);
+
+  // 6. Reddito netto annuo
+  const nettoAnnuo = ralLorda - contribLav - irpefNetta - addReg - addCom;
+
+  // 7. Netto mensile (diviso 13 mensilità per dipendenti, 12 per autonomi)
+  const mensilita = isDip ? 13 : 12;
+  return Math.round(Math.max(0, nettoAnnuo) / mensilita);
+}
+
+function stimaStip(ral, anni, tipo){
+  // RAL futura proiettata con +1,5%/anno (media ISTAT 2014–2024)
+  const ralFutura = ral * Math.pow(1+WAGE, anni);
+  const netto     = calcolaNettoMensile(ralFutura, tipo);
+  return { ralFutura: Math.round(ralFutura), netto };
 }
 function calcBase(){
   const anni=Math.max(1,67-S.eta);
@@ -1483,7 +1532,7 @@ async function doAnalysis(){
     const gapLabels={M:'GAP MENSILE NETTO — STIPENDIO vs PENSIONE',F:'QUANTO TI MANCHERÀ OGNI MESE',A:'DIFFERENZA MENSILE NETTA AL PENSIONAMENTO'};
     const hlEl=document.getElementById('gapHeroLabel');if(hlEl)hlEl.textContent=gapLabels[S.avatar]||gapLabels.M;
     document.getElementById('gapSalSub').textContent=`tra l'ultimo stipendio netto stimato (€\u00a0${fmt(c.stipNetto)}/mese nel ${c.annoPens}) e la pensione INPS stimata (€\u00a0${fmt(c.nettoInps)}/mese)`;
-    document.getElementById('salaryNote').innerHTML=`<strong>Come stimiamo l'ultimo stipendio:</strong> RAL attuale inserita €\u00a0${fmt(S.ral)}/anno × <strong>+1,5%/anno</strong> per <strong>${c.anni} anni</strong> (crescita media retribuzioni Italia, fonte ISTAT 2014–2024) = RAL stimata a ${c.annoPens}: <strong>€\u00a0${fmt(c.ralFutura)}/anno</strong> → <strong>netto mensile €\u00a0${fmt(c.stipNetto)}</strong>.`;
+    document.getElementById('salaryNote').innerHTML=`<strong>Come stimiamo lo stipendio netto:</strong> RAL attuale €\u00a0${fmt(S.ral)} proiettata a +1,5%/anno per ${c.anni} anni = <strong>€\u00a0${fmt(c.ralFutura)}/anno nel ${c.annoPens}</strong> → netto calcolato con aliquote <strong>IRPEF 2026</strong> (scaglioni 23%/35%/43%), contributi previdenziali e addizionali regionali/comunali = <strong>€\u00a0${fmt(c.stipNetto)}/mese</strong>.`;
     // KPI cards: solo per Sara e Luca, non per Alex
     const kpiSection=document.querySelector('.result-kpis');
     if(kpiSection)kpiSection.style.display='none'; // nascosto per tutti (Alex, Sara, Luca usano i propri box)
