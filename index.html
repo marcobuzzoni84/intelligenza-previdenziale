@@ -1325,14 +1325,14 @@ function calcolaNettoMensile(ralLorda, tipo){
   const imponibile = ralLorda - contribLav;
 
   // 2. IRPEF 2026 — scaglioni vigenti (Legge Bilancio 2025)
-  //    ≤ 28.000: 23% | 28.001–50.000: 35% | > 50.000: 43%
+  //    ≤ 28.000: 23% | 28.001–50.000: 33% | > 50.000: 43%
   let irpefLorda = 0;
   if(imponibile <= 28000){
     irpefLorda = imponibile * 0.23;
   } else if(imponibile <= 50000){
-    irpefLorda = 28000*0.23 + (imponibile-28000)*0.35;
+    irpefLorda = 28000*0.23 + (imponibile-28000)*0.33;
   } else {
-    irpefLorda = 28000*0.23 + 22000*0.35 + (imponibile-50000)*0.43;
+    irpefLorda = 28000*0.23 + 22000*0.33 + (imponibile-50000)*0.43;
   }
 
   // 3. Detrazione da lavoro dipendente (art. 13 TUIR) — media stimata
@@ -1422,79 +1422,90 @@ IMPORTANTE: la risposta deve essere SOLO il JSON. Nessun testo prima, nessun tes
 }
 function buildPrompt(c){
   const nn=S.nome||(S.parsed&&S.parsed.nome?S.parsed.nome:null);
+  const nomeStr=nn?` per ${nn}`:'';
   const isP=S.tipo.includes('pubblico');
   const hasFondo=(S.fondo.includes('TFR')||S.fondo.includes('volontario'));
-  const soldiMancanti=Math.round(c.gapSal*12*20);
+  const soldiMancanti=Math.round(Math.abs(c.gapSal)*12*20);
+  const noGap=c.gapSal<=0;
+
   const base=`PROFILO: "${S.profilo||'non specificato'}"
-DATI: età ${S.eta}a | ${S.tipo} | RAL €${fmt(S.ral)} | ${S.contributi} anni contributi | Fondo: ${S.fondo}${hasFondo?' | Montante €'+fmt(S.montante)+' | Versamento €'+fmt(S.versamentoAnnuo)+'/anno':''}
-CALCOLI: INPS netta €${fmt(c.nettoInps)}/mese | Stipendio netto stimato al pensionamento (${c.annoPens}) €${fmt(c.stipNetto)}/mese | Gap mensile €${fmt(c.gapSal)} | Copertura ${c.tasso}% | Soldi mancanti in 20 anni €${fmt(soldiMancanti)} ${isP?'| DIPENDENTE PUBBLICO: NO TFR al fondo.':''}`;
+DATI: età ${S.eta}a | ${S.tipo} | RAL €${fmt(S.ral)}/anno | ${S.contributi} anni contributi | Fondo: ${S.fondo}${hasFondo?' | Montante €'+fmt(S.montante)+' | Versamento €'+fmt(S.versamentoAnnuo)+'/anno':''}
+CALCOLI: INPS netta €${fmt(c.nettoInps)}/mese | Stipendio netto stimato ${c.annoPens}: €${fmt(c.stipNetto)}/mese | Copertura: ${c.tasso}%
+${noGap?`NESSUN GAP — pensione €${fmt(c.nettoInps)}/mese SUPERA stipendio €${fmt(c.stipNetto)}/mese. Situazione previdenziale positiva.`:`GAP €${fmt(c.gapSal)}/mese | €${fmt(soldiMancanti)} mancanti in 20 anni`}
+${isP?'NOTA: dipendente pubblico — NO TFR al fondo.':''}`;
 
   if(S.avatar==='M'){
-    // ALEX: discorso fluido 100 parole, fa riferimento ai dati sopra, invoglia alla call
-    return `Sei Alex, assistente AI previdenziale con approccio analitico e razionale.
+    return `Sei Alex, assistente AI previdenziale analitico e razionale.
 ${base}
-COMPITO: scrivi un'analisi di massimo 100 parole in HTML puro (<p>,<strong>). Discorso fluido e coerente, NO liste, NO titoli (<h3>).
-- Inizia subito con i numeri chiave già mostrati nella lista sopra (pensione, gap, copertura, soldi mancanti in 20 anni)
-- Fai capire che questi numeri dipendono da molte variabili (tipo di lavoro, contribuzione, regime fiscale, fondo pensione) e che esistono leve concrete per ridurre il gap — senza spiegare quali
-- Chiudi lasciando intendere che la call gratuita con Marco Buzzoni è il modo più preciso per capire cosa si può fare sulla base della situazione specifica
-- Tono: razionale, diretto, zero allarmismo, zero vaghezza
-VIETATO: R.I.T.A., "Caro/Gentile", versamenti specifici, nomi di prodotti`;
+COMPITO: analisi personalizzata${nomeStr} in HTML puro (<p>,<strong>), MAX 110 parole. NO liste, NO H3, NO saluti.
+${noGap
+  ?`SCENARIO POSITIVO: copertura ${c.tasso}%, pensione supera stipendio stimato. Spiega razionalmente cosa ha portato a questo risultato (contribuzione, tipo lavoro${hasFondo?', fondo pensione':''}). Segnala che anche in questa situazione una pianificazione attiva può ottimizzare fiscalità e patrimonio. Invita alla call con Marco Buzzoni per confermare e valorizzare.`
+  :`GAP PRESENTE: parti dai numeri reali (copertura ${c.tasso}%, gap €${fmt(c.gapSal)}/mese, €${fmt(soldiMancanti)} in 20 anni). Spiega che dipendono dalle variabili specifiche di ${nn||'questa persona'} (tipo lavoro, contribuzione, regime fiscale${hasFondo?', fondo pensione già attivo':''}). Esistono leve misurabili. La call con Marco Buzzoni è il modo più preciso per quantificarle.`}
+TONO: razionale, diretto, personalizzato. VIETATO: R.I.T.A., versamenti specifici, nomi prodotti.`;
   }
 
   if(S.avatar==='F'){
-    // SARA: struttura specifica con key facts in cima + narrativa empatica
-    return `Sei Sara, assistente AI previdenziale empatica e rassicurante. NON dire "Caro/Gentile". NON R.I.T.A. ${isP?'DIPENDENTE PUBBLICO: NO TFR al fondo.':''}
+    if(noGap){
+      return `Sei Sara, assistente AI previdenziale empatica. NON "Caro/Gentile". NON R.I.T.A.
 ${base}
-
-COMPITO: scrivi SOLO HTML puro — nessun markdown, nessun blocco di codice, nessun titolo con #.
-Struttura ESATTA in questo ordine:
-
-<p><strong>Nel ${c.annoPens}</strong> andrai in pensione${nn?' '+nn:''}. Tra te e quella data ci sono ${c.anni} anni — un tempo prezioso per capire come arrivare preparato.</p>
-
-<p>Ogni mese, la tua pensione INPS coprirà il <strong>${c.tasso}% del tuo stipendio netto</strong> stimato al momento del pensionamento. In pratica: su ogni <strong>€ ${fmt(c.stipNetto)}</strong> che guadagnerai, ne riceverai <strong>€ ${fmt(c.nettoInps)}</strong>. Il resto — <strong style="color:#ef4444">€ ${fmt(c.gapSal)} al mese</strong> — semplicemente non ci sarà.</p>
-
-<p>Cos'è quel denaro? Sono le vacanze che abitudinalmente fai, il mantenimento dell'auto, il supporto ai figli, le piccole spese quotidiane che oggi dai per scontate. In 20 anni di pensione, stiamo parlando di <strong style="color:#ef4444">€ ${fmt(Math.round(c.gapSal*12*20))}</strong> che mancherebbero.</p>
-
-<p>La buona notizia? Ci sono strumenti concreti — fiscalmente vantaggiosi — che esistono esattamente per questo. Non devi sapere oggi come funzionano tutti: l'importante è capire SE e QUANTO questa situazione ti riguarda davvero, e poi ragionarci con qualcuno di fiducia.</p>
-
-<p>Una chiamata gratuita con <strong>Marco Buzzoni</strong> è il modo più semplice per trasformare questi numeri in un quadro chiaro — senza impegno, senza pressioni.</p>
-
-MAX 200 parole totali. Solo HTML. No H3. No liste puntate. No soluzioni operative specifiche.`;
+COMPITO: SOLO HTML puro (<p>,<strong>), MAX 180 parole. Personalizza per ${nn||'questa persona'}.
+<p>Nel <strong>${c.annoPens}</strong>${nomeStr} arriverai alla pensione con una copertura del <strong>${c.tasso}%</strong> — la tua pensione supererà lo stipendio stimato. È un risultato raro e positivo, che vale la pena riconoscere.</p>
+<p>Questo non significa che non ci sia nulla da fare: ci sono <strong>${c.anni} anni</strong> ancora davanti, e in questo tempo si possono ottimizzare la fiscalità${hasFondo?' del fondo pensione già attivo':''}, proteggere la famiglia e pianificare la trasmissione del patrimonio.</p>
+<p>Una conversazione con <strong>Marco Buzzoni</strong> può aiutarti a trasformare una buona posizione in una posizione eccellente — senza urgenza, con la calma che merita.</p>`;
+    }
+    return `Sei Sara, assistente AI previdenziale empatica. NON "Caro/Gentile". NON R.I.T.A. ${isP?'DIPENDENTE PUBBLICO: NO TFR al fondo.':''}
+${base}
+COMPITO: SOLO HTML puro (<p>,<strong>), MAX 200 parole. Personalizza per ${nn||'questa persona'}.
+<p>Nel <strong>${c.annoPens}</strong> andrai in pensione${nomeStr}. Ci sono ancora <strong>${c.anni} anni</strong> — abbastanza per fare qualcosa di concreto.</p>
+<p>Ogni mese la tua pensione coprirà il <strong>${c.tasso}%</strong> del tuo stipendio. Su ogni <strong>€${fmt(c.stipNetto)}</strong>, ne arriveranno <strong>€${fmt(c.nettoInps)}</strong>. Quella differenza di <strong style="color:#ef4444">€${fmt(c.gapSal)} al mese</strong> sono le cose che oggi dai per scontate — le vacanze, la macchina, le spese quotidiane. In vent'anni: <strong style="color:#ef4444">€${fmt(soldiMancanti)}</strong>.</p>
+<p>Ci sono strumenti fiscalmente vantaggiosi pensati esattamente per questa situazione${hasFondo?' — e hai già un fondo pensione attivo, il che è un ottimo punto di partenza':''}. Non devi capire tutto oggi: l'importante è il primo passo.</p>
+<p>Una chiamata gratuita con <strong>Marco Buzzoni</strong> ti aiuta a capire cosa fare — senza impegno, senza pressioni.</p>`;
   }
 
-  // LUCA — mix Alex (dati) + Sara (discorso): la narrativa sta nel lucaAnalysisBox
-  return `Sei Luca, assistente AI previdenziale con approccio equilibrato: razionale sui numeri, umano nel ragionamento. NON dire "Caro/Gentile". NON R.I.T.A. ${isP?'DIPENDENTE PUBBLICO: NO TFR al fondo.':''}
+  // LUCA
+  if(noGap){
+    return `Sei Luca, assistente previdenziale equilibrato. NON "Caro/Gentile". NON R.I.T.A.
 ${base}
-
-COMPITO: scrivi SOLO HTML puro (<p>,<strong>). NO markdown, NO #titoli, NO H3, NO liste puntate.
-Struttura ESATTA — 4 paragrafi:
-
-<p>Primo paragrafo: richiama i dati numerici chiave${nn?' per '+nn:''} — anno di pensionamento ${c.annoPens}, copertura ${c.tasso}%, gap di € ${fmt(c.gapSal)}/mese. Tono diretto, nessun saluto.</p>
-
-<p>Secondo paragrafo: senza citare prodotti o cifre specifiche, fai capire che esistono leve fiscali e strumenti di pianificazione che dipendono dalla situazione specifica. La comprensione precisa richiede un confronto personalizzato.</p>
-
-<p>Terzo paragrafo: invita naturalmente alla call gratuita con Marco Buzzoni — non come obbligo, ma come opportunità concreta per trasformare questi numeri in un piano.</p>
-
-MAX 120 parole totali. Solo HTML. No soluzioni operative specifiche.`;
+COMPITO: SOLO HTML puro (<p>,<strong>), MAX 130 parole. Personalizza per ${nn||'questa persona'}.
+<p>Primo paragrafo: la copertura del ${c.tasso}% è una posizione solida${nomeStr} — nel contesto previdenziale italiano è un risultato positivo e non scontato. Spiega brevemente cosa ha contribuito.</p>
+<p>Secondo paragrafo: anche con questa posizione, ci sono aspetti che vale ottimizzare — fiscalità${hasFondo?' del fondo':''},  protezione patrimoniale, flessibilità futura. Una revisione con Marco Buzzoni può trasformare una buona situazione in una ottima.</p>`;
+  }
+  return `Sei Luca, assistente previdenziale equilibrato. NON "Caro/Gentile". NON R.I.T.A. ${isP?'DIPENDENTE PUBBLICO: NO TFR al fondo.':''}
+${base}
+COMPITO: SOLO HTML puro (<p>,<strong>), MAX 130 parole. Personalizza per ${nn||'questa persona'}.
+<p>Primo paragrafo: richiama anno pensionamento ${c.annoPens}, copertura ${c.tasso}%, gap €${fmt(c.gapSal)}/mese${nomeStr}. Tono diretto.</p>
+<p>Secondo paragrafo: esistono leve fiscali la cui efficacia dipende dalla situazione specifica${hasFondo?' — e hai già un fondo pensione attivo che può essere ottimizzato':''}. La comprensione precisa richiede un confronto personalizzato.</p>
+<p>Terzo paragrafo: invita alla call gratuita con Marco Buzzoni.</p>`;
 }
 function buildConclusionPrompt(c){
   const nn=S.nome||(S.parsed&&S.parsed.nome?S.parsed.nome:null);
   const target=nn?'con '+nn:"con l'utente";
-  const urgenza=c.gapSal>500?'urgente':'gestibile ma da non rimandare';
+  const noGap=c.gapSal<=0;
+  const hasFondo=(S.fondo.includes('TFR')||S.fondo.includes('volontario'));
+
+  const scenarioDesc=noGap
+    ?`Pensione €${fmt(c.nettoInps)}/mese SUPERA stipendio stimato €${fmt(c.stipNetto)}/mese. Copertura ${c.tasso}%. Nessun gap — situazione positiva.`
+    :`Pensione €${fmt(c.nettoInps)}/mese, gap €${fmt(c.gapSal)}/mese, copertura ${c.tasso}%.${hasFondo?' Fondo pensione attivo.':''}`;
+
   const toni={
-    M:`Tono diretto e razionale. Cita i numeri esatti. Accenna alle leve fiscali disponibili (senza dettagli operativi). Invita alla call gratuita con Marco Buzzoni.`,
-    F:`Tono empatico e rassicurante. Riconosci il peso emotivo del dato senza allarmismo. Sottolinea che esistono strumenti concreti. Invita alla call gratuita con Marco Buzzoni come primo passo insieme.`,
-    A:`Tono analitico e preciso. Contestualizza il gap nel quadro previdenziale italiano. Accenna all'ottimizzazione fiscale disponibile per legge. Invita alla call gratuita con Marco Buzzoni.`
+    M: noGap
+      ?`Conferma la solidità della posizione con tono razionale. Segnala opportunità di ottimizzazione (fiscalità, patrimonio). Invita alla call con Marco Buzzoni per valorizzare al meglio.`
+      :`Cita i numeri reali. Segnala leve concrete disponibili. Invita alla call con Marco Buzzoni.`,
+    F: noGap
+      ?`Tono caldo. Riconosci il risultato positivo. Apri uno spazio su come valorizzare ulteriormente questa posizione. Invita alla call senza urgenza.`
+      :`Tono empatico. Riconosci la situazione senza allarmismo. Strumenti concreti esistono. Invita alla call con Marco Buzzoni.`,
+    A: noGap
+      ?`Tono equilibrato. Contestualizza il risultato positivo nel panorama previdenziale italiano. Accenna a opportunità di ottimizzazione. Invita alla call.`
+      :`Tono equilibrato. Contestualizza il gap. Accenna a ottimizzazione fiscale. Invita alla call.`
   };
-  return `Sei ${av().name}, assistente AI previdenziale. Scrivi il commento conclusivo (MAX 60 parole, testo semplice, NO HTML, NO elenchi puntati) parlando direttamente ${target}.
-Struttura in 3 frasi:
-1. La pensione copre il ${c.tasso}% dell'ultimo stipendio netto stimato. Gap mensile: €${fmt(c.gapSal)}.
-2. Cosa significa concretamente per la vita quotidiana — situazione ${urgenza}.
-3. ${toni[S.avatar]||toni.M}
-VIETATO SEMPRE: cifre su versamenti suggeriti, prodotti specifici, R.I.T.A., "Caro/Gentile".`;
+
+  return `Sei ${av().name}, assistente AI previdenziale. Commento conclusivo personalizzato ${target} (MAX 65 parole, testo semplice, NO HTML, NO elenchi).
+SCENARIO: ${scenarioDesc}
+${toni[S.avatar]||toni.M}
+VIETATO: versamenti specifici, prodotti, R.I.T.A., "Caro/Gentile".`;
 }
 
-// ── ANALISI ───────────────────────────────────────────────────────────────
+
 async function runAnalysis(){
   if(!validate())return;collect();
   try{await doAnalysis();}
@@ -1532,7 +1543,7 @@ async function doAnalysis(){
     const gapLabels={M:'GAP MENSILE NETTO — STIPENDIO vs PENSIONE',F:'QUANTO TI MANCHERÀ OGNI MESE',A:'DIFFERENZA MENSILE NETTA AL PENSIONAMENTO'};
     const hlEl=document.getElementById('gapHeroLabel');if(hlEl)hlEl.textContent=gapLabels[S.avatar]||gapLabels.M;
     document.getElementById('gapSalSub').textContent=`tra l'ultimo stipendio netto stimato (€\u00a0${fmt(c.stipNetto)}/mese nel ${c.annoPens}) e la pensione INPS stimata (€\u00a0${fmt(c.nettoInps)}/mese)`;
-    document.getElementById('salaryNote').innerHTML=`<strong>Come stimiamo lo stipendio netto:</strong> RAL attuale €\u00a0${fmt(S.ral)} proiettata a +1,5%/anno per ${c.anni} anni = <strong>€\u00a0${fmt(c.ralFutura)}/anno nel ${c.annoPens}</strong> → netto calcolato con aliquote <strong>IRPEF 2026</strong> (scaglioni 23%/35%/43%), contributi previdenziali e addizionali regionali/comunali = <strong>€\u00a0${fmt(c.stipNetto)}/mese</strong>.`;
+    document.getElementById('salaryNote').innerHTML=`<strong>Come stimiamo lo stipendio netto:</strong> RAL attuale €\u00a0${fmt(S.ral)} proiettata a +1,5%/anno per ${c.anni} anni = <strong>€\u00a0${fmt(c.ralFutura)}/anno nel ${c.annoPens}</strong> → netto calcolato con aliquote <strong>IRPEF 2026</strong> (scaglioni 23%/33%/43%), contributi previdenziali e addizionali regionali/comunali = <strong>€\u00a0${fmt(c.stipNetto)}/mese</strong>.`;
     // KPI cards: solo per Sara e Luca, non per Alex
     const kpiSection=document.querySelector('.result-kpis');
     if(kpiSection)kpiSection.style.display='none'; // nascosto per tutti (Alex, Sara, Luca usano i propri box)
