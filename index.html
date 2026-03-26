@@ -657,12 +657,6 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.4) sepia(1) s
     </div>
     <div class="fields-grid">
       <div class="field-wrap full">
-        <div class="field-label">Data di nascita <span class="badge-req">Obbligatoria</span></div>
-        <div class="field-sublabel">Necessaria per calcolare data e anni mancanti al pensionamento</div>
-        <input class="field-input" type="date" id="dataNascita" min="1950-01-01" max="2000-12-31" onchange="onDateChange()">
-        <div class="field-error" id="errData">⚠ Inserisci la data di nascita per procedere</div>
-      </div>
-      <div class="field-wrap full">
         <div class="field-label">Tipo di lavoro <span class="badge-req">Obbligatorio</span></div>
         <div class="tipo-grid" id="grpTipo">
           <button class="tipo-card selected" onclick="radioClick('grpTipo',this);aggiornaTipo()"><span class="tipo-icon">💼</span><span class="tipo-label">Dipendente privato</span></button>
@@ -670,6 +664,12 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.4) sepia(1) s
           <button class="tipo-card" onclick="radioClick('grpTipo',this);aggiornaTipo()"><span class="tipo-icon">⚡</span><span class="tipo-label">Autonomo / P.IVA</span></button>
           <button class="tipo-card" onclick="radioClick('grpTipo',this);aggiornaTipo()"><span class="tipo-icon">🏢</span><span class="tipo-label">Imprenditore</span></button>
         </div>
+      </div>
+      <div class="field-wrap full">
+        <div class="field-label">Data di nascita <span class="badge-req">Obbligatoria</span></div>
+        <div class="field-sublabel">Necessaria per calcolare data e anni mancanti al pensionamento</div>
+        <input class="field-input" type="date" id="dataNascita" min="1950-01-01" max="2000-12-31" onchange="onDateChange()">
+        <div class="field-error" id="errData">⚠ Inserisci la data di nascita per procedere</div>
       </div>
       <div class="field-wrap full">
         <div class="field-label">Reddito annuo lordo (RAL) <span class="badge-req">Obbligatoria</span></div>
@@ -1090,7 +1090,7 @@ Struttura: {"nome":"","cognome":"","eta":0,"tipo":"","ralEsatta":0,"ralNota":"",
 - tipo: "Dipendente privato","Dipendente pubblico","Autonomo / P.IVA","Imprenditore"
 - fondo: "Non ancora","Sì, con TFR","Sì, con contributo volontario"
 - haFondo: true se ha fondo pensione. montante: euro accumulati (0 se non citato). versamentoAnnuo: euro/anno (0 se non citato)
-- ralEsatta: RAL lorda annua; se netto mensile → round(netto*12/0.68); 0 se non citata
+- ralEsatta: RAL lorda annua in euro. Converti cosi: dipendente privato netto mensile → round(netto*13/0.68); dipendente pubblico netto mensile → round(netto*13/0.70); autonomo/imprenditore netto mensile → round(netto*12/0.72); se cita gia lordo/RAL usa quello; 0 se non citata
 - eta e contributi: anni se citati, altrimenti 0
 TESTO: "${S.profilo}"`;
     const payload=isNetlify
@@ -1180,8 +1180,8 @@ function confirmUnlock(){
 
 // ── CHIP — testo breve visibile + prompt completo nascosto per l'AI ────────
 const CHIP_DISPLAY={
-  dipendente_privato:  'Sono un dipendente privato. Ho un reddito lordo di €',
-  dipendente_pubblico: 'Sono un dipendente pubblico. Il mio stipendio lordo è €',
+  dipendente_privato:  'Sono un dipendente privato con uno stipendio netto di €',
+  dipendente_pubblico: 'Sono un dipendente pubblico con uno stipendio netto di €',
   autonomo:            'Sono un lavoratore autonomo con P.IVA. Il mio reddito lordo annuo è €',
   forfettario:         'Sono in regime forfettario. Il mio reddito lordo annuo è €',
   imprenditore:        'Sono un imprenditore. Il mio reddito lordo è €',
