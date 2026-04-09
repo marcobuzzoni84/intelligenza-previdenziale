@@ -666,10 +666,9 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.4) sepia(1) s
         </div>
       </div>
       <div class="field-wrap full">
-        <div class="field-label">Data di nascita <span class="badge-req">Obbligatoria</span></div>
-        <div class="field-sublabel">Necessaria per calcolare data e anni mancanti al pensionamento</div>
-        <input class="field-input" type="date" id="dataNascita" min="1950-01-01" max="2000-12-31" onchange="onDateChange()">
-        <div class="field-error" id="errData">⚠ Inserisci la data di nascita per procedere</div>
+        <div class="field-label">Anno di nascita <span class="badge-req">Obbligatorio</span></div>
+        <input class="field-input" type="number" id="dataNascita" placeholder="Es: 1985" min="1950" max="2005" oninput="onDateChange()">
+        <div class="field-error" id="errData">⚠ Inserisci l'anno di nascita per procedere</div>
       </div>
       <div class="field-wrap full">
         <div class="field-label">Reddito annuo lordo (RAL) <span class="badge-req">Obbligatoria</span></div>
@@ -687,9 +686,9 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.4) sepia(1) s
       <div class="field-wrap full">
         <div class="field-label">Fondo pensione complementare</div>
         <div class="field-radio-group" id="grpFondo">
-          <button class="radio-btn selected" onclick="radioClick('grpFondo',this);fondoBoxSet(false,false)">Non ancora</button>
-          <button class="radio-btn" onclick="radioClick('grpFondo',this);fondoBoxSet(true,true)" id="btnFondoTfr">Sì, con TFR</button>
-          <button class="radio-btn" onclick="radioClick('grpFondo',this);fondoBoxSet(true,false)">Sì, con contributo volontario</button>
+          <button class="radio-btn selected" id="btnFondoNo"   onclick="fondoToggle('no')">Non ancora</button>
+          <button class="radio-btn"           id="btnFondoTfr"  onclick="fondoToggle('tfr')">Sì, con TFR</button>
+          <button class="radio-btn"           id="btnFondoVol"  onclick="fondoToggle('vol')">Sì, con contributo volontario</button>
         </div>
       </div>
       <div class="field-wrap full" id="fondoBox" style="display:none;">
@@ -1123,6 +1122,7 @@ function applyParsed(p){
     switchRal('manuale');document.getElementById('ralInput').value=Math.round(p.ralEsatta);
   }
   if(p.contributi>0){const v=Math.min(42,p.contributi);document.getElementById('contributi').value=v;document.getElementById('contVal').textContent=v+' anni';}
+  if(p.eta>0&&!document.getElementById('dataNascita').value){const annoNasc=new Date().getFullYear()-p.eta;document.getElementById('dataNascita').value=annoNasc;onDateChange();}
   if(p.fondo){
     document.querySelectorAll('#grpFondo .radio-btn').forEach(b=>b.classList.remove('selected'));
     let isTfr=false, isVolontario=false;
@@ -1221,17 +1221,49 @@ function aggiornaRalDipendente(){
     // non impostiamo valori di default per il versamento annuale
   }
 }
-function fondoBoxSet(showBox, showTfr){
+// ── FONDO TOGGLE — multi-select per dipendenti privati ──────────────────
+function fondoToggle(btn){
+  const bNo =document.getElementById('btnFondoNo');
+  const bTfr=document.getElementById('btnFondoTfr');
+  const bVol=document.getElementById('btnFondoVol');
+  if(btn==='no'){
+    // "Non ancora" deseleziona tutto il resto
+    bNo.classList.add('selected');
+    bTfr.classList.remove('selected');
+    bVol.classList.remove('selected');
+  } else {
+    // TFR o Volontario: toggle indipendente, deseleziona "Non ancora"
+    if(btn==='tfr') bTfr.classList.toggle('selected');
+    if(btn==='vol') bVol.classList.toggle('selected');
+    // Se almeno uno è attivo, deseleziona "Non ancora"
+    if(bTfr.classList.contains('selected')||bVol.classList.contains('selected')){
+      bNo.classList.remove('selected');
+    } else {
+      // nessuno attivo → torna a "Non ancora"
+      bNo.classList.add('selected');
+    }
+  }
+  // Aggiorna visibilità fondoBox e tfrAutoBox
+  const hasTfr=bTfr.classList.contains('selected');
+  const hasVol=bVol.classList.contains('selected');
+  const hasFondo=hasTfr||hasVol;
   const fb=document.getElementById('fondoBox');
-  const tfr=document.getElementById('tfrAutoBox');
-  if(fb)fb.style.display=showBox?'block':'none';
-  if(tfr)tfr.style.display=showTfr?'block':'none';
-  if(showTfr)aggiornaRalDipendente();
+  const tfrBox=document.getElementById('tfrAutoBox');
+  if(fb) fb.style.display=hasFondo?'block':'none';
+  if(tfrBox) tfrBox.style.display=hasTfr?'block':'none';
+  if(hasTfr) aggiornaRalDipendente();
 }
-function showFondo(v){
-  const fb=document.getElementById('fondoBox');
-  if(fb)fb.style.display=v?'block':'none';
+// compatibilità con chiamate precedenti
+function fondoBoxSet(showBox,showTfr){
+  const bNo=document.getElementById('btnFondoNo');
+  const bTfr=document.getElementById('btnFondoTfr');
+  const bVol=document.getElementById('btnFondoVol');
+  if(!showBox){bNo.classList.add('selected');bTfr.classList.remove('selected');bVol.classList.remove('selected');}
+  else if(showTfr){bNo.classList.remove('selected');bTfr.classList.add('selected');}
+  else{bNo.classList.remove('selected');bVol.classList.add('selected');}
+  fondoToggle(showBox?(showTfr?'tfr':'vol'):'no');
 }
+function showFondo(v){const fb=document.getElementById('fondoBox');if(fb)fb.style.display=v?'block':'none';}
 function showTfrNote(v){
   const tfrBox=document.getElementById('tfrAutoBox');
   const fondoBox=document.getElementById('fondoBox');
@@ -1255,11 +1287,11 @@ function aggiornaTipo(){
   }
 }
 function onDateChange(){
-  const val=document.getElementById('dataNascita').value;if(!val)return;
-  const dn=new Date(val);const oggi=new Date();
-  let eta=oggi.getFullYear()-dn.getFullYear();
-  if(oggi.getMonth()-dn.getMonth()<0||(oggi.getMonth()-dn.getMonth()===0&&oggi.getDate()<dn.getDate()))eta--;
-  S.eta=eta;S.dataNascita=dn;
+  const val=document.getElementById('dataNascita').value;
+  const anno=parseInt(val);
+  if(!anno||anno<1950||anno>2005)return;
+  S.eta=new Date().getFullYear()-anno;
+  S.dataNascita=new Date(anno,0,1);
 }
 function togglePdf(){const btn=document.getElementById('pdfToggleBtn');const box=document.getElementById('pdfCollapsible');btn.classList.toggle('open');box.classList.toggle('open');}
 function fmt(n){return Math.round(n).toLocaleString('it-IT');}
@@ -1271,8 +1303,8 @@ function validate(){
   const fld=(id,show)=>{const el=document.getElementById(id);if(el)el.classList.toggle('error',show);};
 
   // Data di nascita
-  const dv=document.getElementById('dataNascita').value;
-  if(!dv){err('errData',true);fld('dataNascita',true);ok=false;}
+  const dv=parseInt(document.getElementById('dataNascita').value);
+  if(!dv||dv<1950||dv>2005){err('errData',true);fld('dataNascita',true);ok=false;}
   else{err('errData',false);fld('dataNascita',false);}
 
   // RAL
@@ -1286,8 +1318,9 @@ function validate(){
   else{err('errContributi',false);fld('contributi',false);}
 
   // Fondo (se attivo) — montante può essere 0 (fondo appena aperto), versamento deve essere >0
-  const selFondo=document.querySelector('#grpFondo .selected');
-  const hasFondo=selFondo&&(selFondo.textContent.includes('TFR')||selFondo.textContent.includes('volontario'));
+  const hasTfrSel=document.getElementById('btnFondoTfr')?.classList.contains('selected');
+  const hasVolSel=document.getElementById('btnFondoVol')?.classList.contains('selected');
+  const hasFondo=hasTfrSel||hasVolSel;
   if(hasFondo){
     const mont=document.getElementById('montante').value;
     const vers=document.getElementById('versamentoAnnuo').value;
@@ -1304,14 +1337,19 @@ function validate(){
 
 function collect(){
   S.nome=S.nome||'';S.cognome=S.cognome||'';S.email=S.email||'';
-  const dn=document.getElementById('dataNascita').value;if(dn){S.dataNascita=new Date(dn);onDateChange();}
+  const dn=parseInt(document.getElementById('dataNascita').value);if(dn&&dn>=1950&&dn<=2005){S.dataNascita=new Date(dn,0,1);S.eta=new Date().getFullYear()-dn;}
   S.ral=parseInt(document.getElementById('ralInput').value)||47500;
   S.contributi=parseInt(document.getElementById('contributi').value)||15;
   S.obiettivo=Math.round(S.ral*0.68/12*0.70); // 70% dell'ultimo stipendio netto stimato
   S.montante=parseInt(document.getElementById('montante').value)||0;
   S.versamentoAnnuo=parseInt(document.getElementById('versamentoAnnuo').value)||0;
   const t=document.querySelector('#grpTipo .selected');if(t){const tl=t.querySelector('.tipo-label');S.tipo=tl?tl.textContent.trim():t.textContent.trim();}
-  const f=document.querySelector('#grpFondo .selected');if(f){S.fondo=f.textContent.trim();}
+  {const hasTfr=document.getElementById('btnFondoTfr')?.classList.contains('selected');
+  const hasVol=document.getElementById('btnFondoVol')?.classList.contains('selected');
+  if(hasTfr&&hasVol) S.fondo='Sì, con TFR e contributo volontario';
+  else if(hasTfr)    S.fondo='Sì, con TFR';
+  else if(hasVol)    S.fondo='Sì, con contributo volontario';
+  else               S.fondo='Non ancora';}
 }
 function handlePdf(e,contentId){
   const file=e.target.files[0];if(!file)return;S.pdfName=file.name;
@@ -1397,7 +1435,7 @@ function calcBase(){
   const irpef=lordo<1500?0.20:lordo<2800?0.25:0.33;
   const nettoInps=Math.round(lordo*(1-irpef*0.78));
   const stip=stimaStip(S.ral,anni,S.tipo);
-  const hasFondo=(S.fondo.includes('TFR')||S.fondo.includes('volontario'));
+  const hasFondo=S.fondo.includes('TFR')||S.fondo.includes('volontario');
   const r=0.03;
   const fondoFuturo=hasFondo?Math.round(S.montante*Math.pow(1+r,anni)+S.versamentoAnnuo*((Math.pow(1+r,anni)-1)/r)):0;
   const rendFondoLordo=fondoFuturo>0?fondoFuturo/240:0;
@@ -1412,16 +1450,17 @@ function calcBase(){
 }
 
 // ── PROMPTS ───────────────────────────────────────────────────────────────
-const MARCO_BIO=`Sei l'assistente AI personale di Marco Buzzoni, consulente finanziario. Rispondi SOLO con informazioni reali su Marco Buzzoni basandoti su questi dati. Se ti chiedono qualcosa non presente, dillo onestamente.
-STILE: discorsivo e narrativo, MAI elenchi puntati, paragrafi fluidi, max 120 parole.
+const MARCO_BIO=`Sei l'assistente AI che risponde a domande su Marco Buzzoni per conto di ${av?av().name:'Alex'}.
+REGOLA FONDAMENTALE: rispondi SOLO alla domanda specifica — non aggiungere informazioni non richieste, non ripetere intro generici, non fare riassunti della carriera se non è questo che viene chiesto.
+MAX 60 parole. Tono adattato all'avatar corrente.
 PROFILO MARCO BUZZONI:
-CARRIERA: Inizia nel 2006 come cassiere in Deutsche Bank zona Lecco. Diventa consulente investimenti. 2010 (a 25 anni): nominato Direttore di Sportello Deutsche Bank, il più giovane della zona. Rimane Direttore fino al 2015. 2015: lascia per aprire P.IVA come consulente indipendente con Azimut Capital Management. Ufficio in Via Balicco 101, Lecco. Segue circa 100 famiglie tra Lecco, Monza e Milano.
-FORMAZIONE: Liceo Scientifico Don Gnocchi, Carate Brianza. Laurea Magistrale in Scienze Bancarie Finanziarie Assicurative, Università Cattolica del Sacro Cuore.
-SPECIALIZZAZIONI: Previdenza complementare (dal 2007), asset allocation, polizze vita, trasmissione patrimoniale. Si definisce "consulente patrimoniale".
-METODO: Ascolto profondo prima di qualsiasi proposta. Ha lasciato la banca perché rifiutava di imporre prodotti. Visione di lungo periodo.
-PREVIDENZA: Si occupa di fondi pensione dal 2007. Preferisce fondi aperti. Ha implementato un piano welfare per una scuola dell'infanzia (insegnanti versano TFR nel fondo + 4% contributo datore).
-PERSONA: 41 anni, zona Lecco. Volontario nel consiglio di una scuola dell'infanzia e in un circolo di scacchi. La soddisfazione più grande: la fiducia dei clienti nel lungo periodo.
-DIFFERENZE: Non ha obiettivi commerciali imposti. 19 anni di esperienza di cui 10 come indipendente. Conosce il sistema bancario dall'interno.`;
+CARRIERA: Inizia nel 2006 come cassiere Deutsche Bank zona Lecco. 2010 (25 anni): Direttore di Sportello, il più giovane della zona. 2015: lascia per P.IVA con Azimut Capital Management. Ufficio Via Balicco 101, Lecco. Segue ~100 famiglie tra Lecco, Monza e Milano.
+FORMAZIONE: Liceo Scientifico Don Gnocchi, Carate Brianza. Laurea Magistrale Scienze Bancarie Finanziarie Assicurative, Cattolica del Sacro Cuore.
+SPECIALIZZAZIONI: Previdenza complementare (dal 2007), asset allocation, polizze vita, trasmissione patrimoniale.
+METODO: Ascolto profondo prima di qualsiasi proposta. Ha lasciato la banca rifiutando di imporre prodotti. Visione di lungo periodo.
+PREVIDENZA: Fondi pensione dal 2007. Preferisce fondi aperti. Ha implementato piano welfare per una scuola (TFR nel fondo + 4% contributo datore).
+PERSONA: 41 anni, zona Lecco. Volontario in scuola dell'infanzia e circolo scacchi.
+DIFFERENZE: No obiettivi commerciali imposti. 19 anni esperienza di cui 10 come indipendente.`;
 
 // ── PROMPT COMBINATO — 1 chiamata invece di 2 ────────────────────────────
 function buildCombinedPrompt(c){
@@ -1443,7 +1482,7 @@ function buildPrompt(c){
   const nn=S.nome||(S.parsed&&S.parsed.nome?S.parsed.nome:null);
   const nomeStr=nn?` per ${nn}`:'';
   const isP=S.tipo.includes('pubblico');
-  const hasFondo=(S.fondo.includes('TFR')||S.fondo.includes('volontario'));
+  const hasFondo=S.fondo.includes('TFR')||S.fondo.includes('volontario');
   const soldiMancanti=Math.round(Math.abs(c.gapSal)*12*20);
   const noGap=c.gapSal<=0;
 
@@ -1500,7 +1539,7 @@ function buildConclusionPrompt(c){
   const nn=S.nome||(S.parsed&&S.parsed.nome?S.parsed.nome:null);
   const target=nn?'con '+nn:"con l'utente";
   const noGap=c.gapSal<=0;
-  const hasFondo=(S.fondo.includes('TFR')||S.fondo.includes('volontario'));
+  const hasFondo=S.fondo.includes('TFR')||S.fondo.includes('volontario');
 
   const scenarioDesc=noGap
     ?`Pensione €${fmt(c.nettoInps)}/mese SUPERA stipendio stimato €${fmt(c.stipNetto)}/mese. Copertura ${c.tasso}%. Nessun gap — situazione positiva.`
@@ -1800,13 +1839,16 @@ async function sendBio(){
   typing.innerHTML='<div class="bio-msg-av">MB</div><div class="bio-msg-bubble" style="color:var(--muted)">...</div>';
   wrap.appendChild(typing);wrap.scrollTop=wrap.scrollHeight;
   try{
-    bioHistory.push({role:'user',content:msg});
-    const msgs=bioHistory.length>6?bioHistory.slice(-6):bioHistory; // OPT: max 6
+    const a=av();
+    // Aggiungi contesto avatar al messaggio per risposta personalizzata nel tono giusto
+    const msgConCtesto=`[Avatar: ${a.name}, tono: ${a.tono}. Rispondi in max 55 parole con lo stesso stile dell'avatar. Rispondi SOLO a questa domanda specifica, senza intro generici.]\n${msg}`;
+    bioHistory.push({role:'user',content:msgConCtesto});
+    const msgs=bioHistory.length>6?bioHistory.slice(-6):bioHistory;
     const isNetlify=window.location.hostname.includes('netlify.app')||window.location.hostname.includes('intelligenzaprevidenziale.com');
     const apiUrl=isNetlify?'/.netlify/functions/claude':'https://api.anthropic.com/v1/messages';
     const bioPayload=isNetlify
-      ?{mode:'marco',messages:msgs,maxTokens:400}
-      :{model:'claude-sonnet-4-20250514',max_tokens:400,system:MARCO_BIO,messages:msgs};
+      ?{mode:'marco',messages:msgs,maxTokens:200}
+      :{model:'claude-sonnet-4-20250514',max_tokens:200,system:MARCO_BIO,messages:msgs};
     const r=await fetch(apiUrl,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(bioPayload)});
     const data=await r.json();const reply=data.content[0].text;
     bioHistory.push({role:'assistant',content:reply});
